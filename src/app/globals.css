@@ -1,0 +1,309 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN SYSTEM — "Noir Romântico"
+   Noite de vinho, rosas e luz de vela.
+   Tokens em português para evitar conflito com a paleta padrão.
+   ============================================================ */
+
+@theme inline {
+  /* Cores base */
+  --color-noite: #130509;
+  --color-ameixa: #2b0c1f;
+  --color-vinho: #561431;
+  --color-rosa: #ff6b9a;
+  --color-rosa-forte: #ef3e6e;
+  --color-blush: #ffd7e3;
+  --color-ouro: #e8b873;
+  --color-champanhe: #f7e3bb;
+  --color-creme: #fff0f4;
+  --color-rosado: #c9a0b2;
+
+  /* Fontes (injetadas pelo next/font no layout) */
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-figtree);
+  --font-hand: var(--font-caveat);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--color-noite);
+  color: var(--color-creme);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-rosa-forte);
+  color: var(--color-creme);
+}
+
+/* ============================================================
+   Camadas de atmosfera (fundo fixo + vinheta + granulado)
+   ============================================================ */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background:
+    radial-gradient(55rem 55rem at 85% -12%, rgba(134, 30, 70, 0.5), transparent 62%),
+    radial-gradient(48rem 48rem at -18% 28%, rgba(86, 20, 49, 0.55), transparent 60%),
+    radial-gradient(42rem 42rem at 108% 78%, rgba(232, 184, 115, 0.1), transparent 60%),
+    radial-gradient(36rem 36rem at 18% 105%, rgba(239, 62, 110, 0.12), transparent 60%),
+    var(--color-noite);
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: -9;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(8, 1, 4, 0.55) 100%);
+}
+
+/* Granulado de filme por cima de tudo (bem sutil) */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* ============================================================
+   Componentes utilitários
+   ============================================================ */
+
+@layer components {
+  .glass {
+    background: rgba(255, 240, 244, 0.045);
+    border: 1px solid rgba(255, 215, 227, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow:
+      0 8px 32px rgba(8, 1, 4, 0.35),
+      inset 0 1px 0 rgba(255, 240, 244, 0.06);
+  }
+
+  .glass-strong {
+    background: rgba(43, 12, 31, 0.55);
+    border: 1px solid rgba(255, 215, 227, 0.16);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+      0 16px 48px rgba(8, 1, 4, 0.5),
+      inset 0 1px 0 rgba(255, 240, 244, 0.08);
+  }
+
+  /* Texto com brilho dourado varrendo */
+  .text-shimmer {
+    background: linear-gradient(
+      110deg,
+      var(--color-champanhe) 0%,
+      var(--color-ouro) 28%,
+      #fff6e0 50%,
+      var(--color-ouro) 72%,
+      var(--color-champanhe) 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 5.5s ease-in-out infinite;
+  }
+
+  /* Texto gradiente rosa */
+  .text-romance {
+    background: linear-gradient(115deg, var(--color-blush) 5%, var(--color-rosa) 45%, var(--color-ouro) 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Esconde a barra de rolagem mantendo o scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Máscara de fade nas bordas laterais (galeria) */
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  }
+
+  /* Moldura polaroid */
+  .polaroid-frame {
+    background: linear-gradient(160deg, #fff7f0 0%, #f7e9df 100%);
+    box-shadow:
+      0 1px 2px rgba(8, 1, 4, 0.3),
+      0 12px 32px rgba(8, 1, 4, 0.45),
+      0 24px 64px rgba(86, 20, 49, 0.3);
+  }
+}
+
+/* ============================================================
+   Animações
+   ============================================================ */
+
+@keyframes shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--rot, 0deg));
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.9);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--heart-opacity, 0.25);
+  }
+  88% {
+    opacity: var(--heart-opacity, 0.25);
+  }
+  100% {
+    transform: translateY(-108vh) translateX(var(--sway, 24px)) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(239, 62, 110, 0.45),
+      0 8px 32px rgba(239, 62, 110, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 12px rgba(239, 62, 110, 0),
+      0 8px 40px rgba(239, 62, 110, 0.55);
+  }
+}
+
+@keyframes tap-heart {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% - 90px)) scale(1.25) rotate(var(--rot, 8deg));
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-9px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Estrelinhas que piscam */
+.star {
+  position: absolute;
+  border-radius: 9999px;
+  background: var(--color-champanhe);
+  animation: twinkle var(--dur, 3.4s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Corações ambiente subindo */
+.ambient-heart {
+  position: absolute;
+  bottom: -6vh;
+  animation: rise var(--dur, 16s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+
+/* Coração que nasce no toque */
+.tap-heart {
+  position: fixed;
+  animation: tap-heart 0.9s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-heart,
+  .tap-heart,
+  .text-shimmer {
+    animation: none !important;
+  }
+}
