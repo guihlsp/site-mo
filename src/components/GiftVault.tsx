@@ -337,8 +337,7 @@ export default function GiftVault() {
                     initial={{ rotateY: 90, opacity: 0 }}
                     animate={{ rotateY: 0, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 120, damping: 16, delay: 0.35 }}
-                    className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-ouro/40 bg-gradient-to-br from-[#1c0810] via-vinho to-[#0d0306] p-5 text-left shadow-[0_20px_60px_rgba(8,1,4,0.55)]"
-                    style={{ aspectRatio: "1.586" }}
+                    className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-ouro/40 bg-gradient-to-br from-[#1c0810] via-vinho to-[#0d0306] p-5 text-left shadow-[0_20px_60px_rgba(8,1,4,0.55)] min-h-[13rem] sm:aspect-[1.586]"
                   >
                     {/* varredura de brilho */}
                     <motion.div
@@ -348,7 +347,7 @@ export default function GiftVault() {
                       transition={{ delay: 0.9, duration: 1.4, ease: "easeInOut" }}
                       className="absolute inset-y-0 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-champanhe/15 to-transparent"
                     />
-                    <div className="flex h-full flex-col justify-between">
+                    <div className="flex h-full flex-col justify-between gap-4">
                       <div className="flex items-start justify-between">
                         <span className="text-xs font-bold uppercase tracking-[0.3em] text-champanhe">
                           {texts.vault.cardBrand}
