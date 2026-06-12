@@ -361,6 +361,7 @@ export const texts = {
     successMessage:
       "Você desbloqueou: um vale-presente da Shein. Te amo, Mozão. Agora vai lá lotar o carrinho, você merece cada item. ❤",
     cardBrand: "SHEIN · GIFT CARD",
+    cardValue: "R$ 500,00",
     cardNumberLabel: "Número do cartão",
     cardPinLabel: "PIN",
     copyLabel: "copiar",
