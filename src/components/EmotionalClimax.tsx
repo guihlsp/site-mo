@@ -114,6 +114,28 @@ export default function EmotionalClimax() {
         <Reveal delay={0.4}>
           <p className="font-hand text-3xl text-ouro md:text-4xl">{texts.climax.signature}</p>
         </Reveal>
+
+        {/* O Guizão vaqueiro assinando embaixo — com "Nath" na sola da bota */}
+        <Reveal delay={0.2} className="relative">
+          <div
+            aria-hidden
+            className="absolute inset-x-6 bottom-4 -z-10 h-20 rounded-full bg-ouro/15 blur-2xl"
+          />
+          <motion.div
+            animate={reducedMotion ? undefined : { y: [0, -8, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="relative mx-auto w-[56vw] max-w-[260px]"
+            style={{ aspectRatio: "598 / 820" }}
+          >
+            <Image
+              src="/guide/guia-vaqueiro.webp"
+              alt="Guizão em versão boneco vaqueiro, com o nome “Nath” na sola da bota"
+              fill
+              sizes="(max-width: 768px) 56vw, 260px"
+              className="object-contain drop-shadow-[0_18px_30px_rgba(8,1,4,0.5)]"
+            />
+          </motion.div>
+        </Reveal>
       </div>
     </section>
   );

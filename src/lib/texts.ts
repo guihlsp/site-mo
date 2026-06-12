@@ -338,7 +338,7 @@ export const texts = {
       "A gente já se imaginou assim: mais maduros, dois pequenos de cabelo cacheado fazendo bagunça e um pitbull sorridente achando que é gente.",
       "Pôr do sol garantido, cheiro de comida sua na cozinha, amor de sobra. Eu assino esse futuro hoje, sem nem ler as letras miúdas.",
     ],
-    signature: "— Guizão, o seu pra sempre",
+    signature: "— Guizão, para sempre seu",
   },
 
   // ── Cofre final ────────────────────────────────────────────────
