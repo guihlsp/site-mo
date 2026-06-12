@@ -490,13 +490,22 @@ export const texts = {
   },
 
   player: {
-    miniLabel: "tocar nossa trilha",
-    ariaPlay: "Tocar música",
-    ariaPause: "Pausar música",
-    ariaNext: "Próxima música",
+    miniLabel: "ligar a Rádio Guizão FM",
+    stationName: "Rádio Guizão FM",
+    stationTagline: "a rádio oficial dos apaixonados em estado avançado",
+    onAir: "no ar",
+    nowPlaying: "tocando agora",
+    upNext: "a seguir",
+    labelRadio: "Vinheta",
+    labelMusic: "Música",
+    blockedMessage: "Toque para ligar a Rádio Guizão FM 🎙️",
+    ariaPlay: "Tocar",
+    ariaPause: "Pausar",
+    ariaNext: "Próxima faixa",
+    ariaPrev: "Faixa anterior",
     ariaMute: "Silenciar",
     ariaUnmute: "Ativar som",
-    ariaVolume: "Volume da música",
+    ariaVolume: "Volume da rádio",
   },
 
   footer: {

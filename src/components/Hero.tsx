@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useGate } from "./journey/GateProvider";
 import { requestPlayerStart } from "@/lib/player-bus";
-import { playlist } from "@/lib/playlist";
+import { radioPlaylist } from "@/lib/radioPlaylist";
 import { texts } from "@/lib/texts";
 
 /** Selo giratório estilo "lacre de carta" */
@@ -87,7 +87,7 @@ function StaggeredTitle() {
 }
 
 export default function Hero() {
-  const hasMusic = playlist.length > 0;
+  const hasMusic = radioPlaylist.length > 0;
   const { isUnlocked, unlock } = useGate();
   const started = isUnlocked("start");
 
