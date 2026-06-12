@@ -3,11 +3,10 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import Reveal from "./Reveal";
-import { climaxPhotoId, futurePhoto, photoById } from "@/lib/photos";
+import { futurePhoto } from "@/lib/photos";
 import { texts } from "@/lib/texts";
 
 export default function EmotionalClimax() {
-  const photo = photoById(climaxPhotoId);
   const reducedMotion = useReducedMotion();
 
   return (
@@ -47,38 +46,6 @@ export default function EmotionalClimax() {
             />
           </motion.div>
         </motion.div>
-
-        {/* Foto com auréola dourada e respiração lenta */}
-        <Reveal delay={0.1} className="relative">
-          <div
-            aria-hidden
-            className="absolute -inset-8 rounded-[40px] bg-rosa-forte/20 blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-ouro/30 via-transparent to-rosa/30 blur-xl"
-          />
-          <motion.div
-            animate={reducedMotion ? undefined : { scale: [1, 1.035, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="relative w-[78vw] max-w-[340px] overflow-hidden rounded-3xl ring-1 ring-ouro/40 shadow-[0_24px_80px_rgba(8,1,4,0.6)]"
-            style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
-          >
-            <Image
-              src={photo.src}
-              alt="Nós dois"
-              fill
-              sizes="(max-width: 768px) 78vw, 340px"
-              placeholder="blur"
-              blurDataURL={photo.blurDataURL}
-              className="object-cover"
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-gradient-to-t from-noite/40 via-transparent to-transparent"
-            />
-          </motion.div>
-        </Reveal>
 
         <div className="flex flex-col gap-7">
           {texts.climax.lines.map((line, i) => (
