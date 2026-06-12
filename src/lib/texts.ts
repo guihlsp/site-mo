@@ -398,6 +398,91 @@ export const texts = {
       "Meu plano pra hoje: você.",
       "Quem me programou mandou te amar. Obedeço feliz.",
     ],
+
+    // Falas por contexto: cada "fantasia" do guia tem o seu repertório.
+    // Se uma variante não estiver aqui, cai nas falas genéricas acima.
+    tapPhrasesByVariant: {
+      // Boas-vindas (JourneyIntro)
+      acenando: [
+        "Oi de novo! Eu aceno, mas é você que me move.",
+        "Bem-vinda à parte em que eu falo demais. Aproveita.",
+        "Guia de bolso reportando: tudo lindo por aqui. Principalmente você.",
+        "Role com calma. Se você se perder, eu corro atrás.",
+        "Aperta o play do coração e vem comigo.",
+      ],
+      // Motivos pra te amar (LoveReasons)
+      engracado: [
+        "Motivo nº 4.001: você ri das minhas piadas ruins.",
+        "Tenho mais motivos que a Shein tem item no catálogo.",
+        "Spoiler: a lista de motivos não acaba. Igual meu papo.",
+        "Ri comigo, não de mim. Tá… de mim também pode.",
+        "Sou engraçado? Não. Mas você ri. Vitória minha.",
+      ],
+      // Oráculo (TruthOracle)
+      oraculo: [
+        "As cartas dizem que você vai ser muito amada. Elas sempre dizem isso.",
+        "Consultei o pêndulo: apontou pra você. Óbvio.",
+        "Prevejo beijos no seu futuro. Vários. Sou ótimo nisso.",
+        "O universo conspira a seu favor. E eu também.",
+        "Vidente de mentira erra tudo. Em você eu sempre acerto.",
+      ],
+      // Quiz show (CoupleQuiz)
+      quiz: [
+        "Pergunta bônus: quem te ama mais? (resposta: eu)",
+        "Sem colar! Ah… nesse quiz pode. É tudo sobre nós.",
+        "Plateia em silêncio… e a resposta certa é você!",
+        "Ponto extra por estar linda respondendo.",
+        "Microfone testando: 1, 2, te amo, 3.",
+      ],
+      // Laudo técnico (TechReport)
+      apontando: [
+        "Os dados não mentem: você é 100%. E olha que arredondei pra baixo.",
+        "Gráfico oficial: amor crescente, sem teto.",
+        "Laudo assinado: maravilhosa, com selo de qualidade.",
+        "Aponto pros números, mas só olho pra você.",
+        "Margem de erro: zero. Igual minha certeza de te amar.",
+      ],
+      // Capítulo difícil (ApartChapter)
+      triste: [
+        "Essa parte aperta… segura minha mão de feltro?",
+        "Já passou. A gente voltou. Ufa.",
+        "Saudade é feia. Você, nunca.",
+        "Chorei aqui. Mas é choro do bom, prometo.",
+        "Costura comigo? Coração inteiro fica melhor.",
+      ],
+      // Museu / galeria (PhotoGallery)
+      orgulhoso: [
+        "Curadoria impecável. Quase tão bonita quanto a modelo.",
+        "Bem-vinda ao acervo mais fofo do mundo.",
+        "Cada foto é uma obra-prima. Vantagem de ter você nelas.",
+        "Posso me gabar? É a minha namorada nas paredes.",
+        "Museu nota mil. Recomendo a visita guiada (por mim).",
+      ],
+      // Bilheteria do museu (MuseumTicket)
+      bilheteiro: [
+        "Ingresso na mão? A casa é sua, princesa.",
+        "Pra você não tem fila. Nunca teve.",
+        "Carimba aí que eu libero o melhor acervo do mundo.",
+        "Entrada VIP: pagamento aceito só em sorrisos.",
+        "Sou o porteiro mais simpático que você vai achar.",
+      ],
+      // Segurança do cofre (GiftVault trancado)
+      cofre: [
+        "Segurança máxima. Só passa quem eu amo. Ou seja: você.",
+        "Identidade confirmada: a dona de tudo isso.",
+        "Senha forte, coração mais forte ainda. Pode tentar.",
+        "Tô de olho… nos seus olhos, na verdade.",
+        "Área restrita. Restrita a você, claro.",
+      ],
+      // Presente liberado (GiftVault sucesso)
+      presente: [
+        "Conseguiu! Eu nunca duvidei (menti, duvidei na terceira).",
+        "Presente liberado. O melhor ainda sou eu, né? 🎁",
+        "Vai lá gastar. Você merece o carrinho cheio.",
+        "Cofre aberto, coração também. Sempre esteve.",
+        "Missão cumprida, Mozão. Orgulho desse boneco aqui.",
+      ],
+    } as Record<string, string[]>,
   },
 
   player: {

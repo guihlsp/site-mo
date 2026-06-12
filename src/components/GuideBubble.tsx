@@ -84,7 +84,11 @@ export default function GuideBubble({
   const tailSide = side === "right" ? "sm:right-[-6px] sm:left-auto" : "sm:left-[-6px]";
 
   function pokeGuide() {
-    const phrases: readonly string[] = texts.guide.tapPhrases;
+    // Cada fantasia do guia tem o seu repertório; sem repertório próprio,
+    // cai nas falas genéricas.
+    const byVariant = texts.guide.tapPhrasesByVariant[variant];
+    const phrases: readonly string[] =
+      byVariant && byVariant.length > 0 ? byVariant : texts.guide.tapPhrases;
     if (phrases.length === 0) return;
     let index = Math.floor(Math.random() * phrases.length);
     // evita repetir a mesma frase duas vezes seguidas
