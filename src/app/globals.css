@@ -308,36 +308,46 @@ body {
   }
 }
 
-/* ——— Caricaturas flutuando no fundo (FloatingStickerBackground) ——— */
-@keyframes sticker-drift {
+/* ——— Caricaturas atravessando o fundo (FloatingStickerBackground) ——— */
+/* Cada sticker entra por uma borda e sai pela oposta, no sentido da sua
+   direção (--fx/--fy → --tx/--ty). Fade nas pontas evita "pulo". */
+@keyframes sticker-cross {
   0% {
-    transform: translate3d(0, 0, 0) rotate(var(--rot-from, 0deg)) scale(1);
+    transform: translate3d(var(--fx, -30vw), var(--fy, 0), 0)
+      rotate(var(--rot-from, 0deg)) scale(var(--scl, 1));
+    opacity: 0;
   }
-  50% {
-    transform: translate3d(var(--dx, 40px), var(--dy, 40px), 0)
-      rotate(var(--rot-to, 0deg)) scale(var(--scale-to, 1.05));
+  12% {
+    opacity: var(--vis, 0.16);
+  }
+  88% {
+    opacity: var(--vis, 0.16);
   }
   100% {
-    transform: translate3d(0, 0, 0) rotate(var(--rot-from, 0deg)) scale(1);
+    transform: translate3d(var(--tx, 115vw), var(--ty, 0), 0)
+      rotate(var(--rot-to, 0deg)) scale(var(--scl, 1));
+    opacity: 0;
   }
 }
 
 .floating-sticker {
   position: absolute;
-  /* deriva lenta de ida-e-volta: nunca "pula" ao reiniciar */
-  animation: sticker-drift var(--dur, 70s) ease-in-out infinite;
+  top: 0;
+  left: 0;
+  --vis: calc(var(--sticker-opacity, 0.16) * var(--op, 1));
+  /* travessia contínua de ponta a ponta */
+  animation: sticker-cross var(--dur, 26s) linear infinite;
   animation-delay: var(--delay, 0s);
-  opacity: calc(var(--sticker-opacity, 0.16) * var(--op, 1));
+  opacity: 0;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
-  will-change: transform;
-  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 /* No mobile: menos stickers, menores e mais discretos */
 @media (max-width: 767px) {
   .floating-sticker {
-    width: calc(var(--w, 110px) * 0.72);
-    opacity: calc(var(--sticker-opacity-mobile, 0.1) * var(--op, 1));
+    width: calc(var(--w, 110px) * 0.78);
+    --vis: calc(var(--sticker-opacity-mobile, 0.1) * var(--op, 1));
   }
   .floating-sticker[data-mobile="0"] {
     display: none;
@@ -347,5 +357,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .floating-sticker {
     animation: none !important;
+    /* parado no meio do caminho (na tela), em vez de fora dela */
+    opacity: var(--vis);
+    transform: translate3d(
+        calc((var(--fx, -30vw) + var(--tx, 115vw)) / 2),
+        calc((var(--fy, 0px) + var(--ty, 0px)) / 2),
+        0
+      )
+      rotate(var(--rot-from, 0deg));
   }
 }
