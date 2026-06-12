@@ -34,8 +34,10 @@ export default function Home() {
             Antes disso a página nem rola. */}
         <Hero />
 
-        {/* Portão 1: tudo abaixo só existe depois de começar a experiência */}
-        <Gate stage="start">
+        {/* Portão 1: tudo abaixo só existe depois de começar a experiência.
+            O scroll do start é feito pelo provider (depois do loading sair),
+            então aqui o próprio Gate não rola. */}
+        <Gate stage="start" autoScroll={false}>
           {/* 2 · Introdução da jornada (primeira aparição do guia) */}
           <JourneyIntro />
 

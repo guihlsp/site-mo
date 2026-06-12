@@ -18,11 +18,17 @@ export default function Gate({
   stage,
   children,
   locked = null,
+  scrollDelay = 700,
+  autoScroll = true,
 }: {
   stage: Stage;
   children: React.ReactNode;
   /** O que mostrar enquanto está trancado (padrão: nada) */
   locked?: React.ReactNode;
+  /** quanto esperar (ms) antes de rolar até a seção revelada */
+  scrollDelay?: number;
+  /** se o próprio Gate rola até a seção (o start é tratado pelo provider) */
+  autoScroll?: boolean;
 }) {
   const { ready, isUnlocked, justUnlocked, clearJustUnlocked } = useGate();
   const ref = useRef<HTMLDivElement>(null);
@@ -40,16 +46,16 @@ export default function Gate({
     //    nada de pulo brusco mesmo com reduced-motion)
     const scrollId = setTimeout(() => {
       const el = ref.current;
-      if (el) smoothScrollToEl(el, 24, 1500);
+      if (el && autoScroll) smoothScrollToEl(el, 24, 1500);
       clearJustUnlocked();
-    }, 700);
-    const fxId = setTimeout(() => setPlayFx(false), 2400);
+    }, scrollDelay);
+    const fxId = setTimeout(() => setPlayFx(false), Math.max(2400, scrollDelay + 900));
     return () => {
       clearTimeout(startId);
       clearTimeout(scrollId);
       clearTimeout(fxId);
     };
-  }, [justUnlocked, stage, clearJustUnlocked]);
+  }, [justUnlocked, stage, clearJustUnlocked, scrollDelay, autoScroll]);
 
   if (!ready || !open) {
     return locked ? <div ref={ref}>{locked}</div> : <div ref={ref} aria-hidden />;

@@ -61,6 +61,8 @@ export default function GateProvider({ children }: { children: React.ReactNode }
   const [ready, setReady] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState<Stage | null>(null);
   const [booting, setBooting] = useState(false);
+  // overflow original do body/html (pra restaurar quando destravar o scroll)
+  const restore = useRef<{ body: string; html: string } | null>(null);
 
   // Lê o progresso salvo (adiado um tick, como no ApartChapter)
   useEffect(() => {
@@ -106,13 +108,33 @@ export default function GateProvider({ children }: { children: React.ReactNode }
   const beginStart = useCallback(() => {
     if (unlocked.start) return;
     setBooting(true);
-    setTimeout(() => unlock("start"), 90); // deixa o overlay pintar antes
-    setTimeout(() => setBooting(false), 1500); // some depois do mount
+    setTimeout(() => {
+      unlock("start");
+      // destrava o scroll JÁ (o effect que faz isso pode demorar pelo mount
+      // pesado, e sem isso o scroll automático fica preso no overflow:hidden).
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      restore.current = null;
+
+      // Espera o navegador ficar ocioso (o mount pesado terminou) pra ESCONDER
+      // o loading e SÓ ENTÃO rolar — assim ela vê o scroll suave de verdade,
+      // sem ele acontecer travado por baixo do loading.
+      const reveal = () => {
+        setBooting(false);
+        setTimeout(() => {
+          document.getElementById("jornada")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 350);
+      };
+      const w = window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      };
+      if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(reveal, { timeout: 2400 });
+      else setTimeout(reveal, 1400);
+    }, 90);
   }, [unlocked.start, unlock]);
 
   // Trava o scroll do site enquanto a experiência não começou.
   // Só age depois de "ready" para não travar quem volta no meio da sessão.
-  const restore = useRef<{ body: string; html: string } | null>(null);
   useEffect(() => {
     if (!ready) return;
     const lock = !unlocked.start;
