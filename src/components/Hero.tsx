@@ -23,8 +23,12 @@ function RotatingSeal() {
         <defs>
           <path id="seal-circle" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
         </defs>
-        <text className="fill-ouro text-[10.5px] font-semibold uppercase" style={{ letterSpacing: "2.2px" }}>
-          <textPath href="#seal-circle">{sealText.repeat(2).slice(0, 58)}</textPath>
+        {/* 2 ciclos completos travados na circunferência (2π·37 ≈ 232):
+            toda junção entre as frases ganha o seu "•", inclusive a emenda */}
+        <text className="fill-ouro text-[9.6px] font-semibold uppercase" style={{ letterSpacing: "1.9px" }}>
+          <textPath href="#seal-circle" textLength={232} lengthAdjust="spacingAndGlyphs">
+            {sealText.repeat(2)}
+          </textPath>
         </text>
       </svg>
       <div className="absolute inset-[26%] flex items-center justify-center rounded-full border border-ouro/40 bg-gradient-to-br from-vinho to-ameixa shadow-[0_0_28px_rgba(232,184,115,0.25)]">
