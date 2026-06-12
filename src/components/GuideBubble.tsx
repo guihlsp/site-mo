@@ -2,8 +2,58 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { texts } from "@/lib/texts";
+
+/**
+ * Texto que "se digita" quando entra na tela. Reserva a altura final
+ * (cópia invisível) pra não causar layout shift, mostra um caret piscando
+ * enquanto digita e expõe o texto completo pra leitores de tela.
+ */
+function Typewriter({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const reduced = useReducedMotion();
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView || reduced) return;
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setCount(i);
+      if (i >= text.length) clearInterval(id);
+    }, 16);
+    return () => clearInterval(id);
+  }, [inView, reduced, text]);
+
+  const shown = reduced ? text : text.slice(0, count);
+  const done = reduced || count >= text.length;
+
+  return (
+    <span ref={ref} className="relative inline-block align-top">
+      {/* reserva o espaço do texto completo (sem causar pulo de layout) */}
+      <span className="invisible" aria-hidden>
+        {text}
+      </span>
+      {/* texto digitado, sobreposto */}
+      <span aria-hidden className="absolute inset-0">
+        {shown}
+        {!done && (
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ duration: 0.55, repeat: Infinity, ease: "linear" }}
+            className="ml-0.5 inline-block text-rosa"
+          >
+            ▍
+          </motion.span>
+        )}
+      </span>
+      {/* texto completo pra acessibilidade */}
+      <span className="sr-only">{text}</span>
+    </span>
+  );
+}
 
 /**
  * ============================================================
@@ -198,7 +248,9 @@ export default function GuideBubble({
           <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-rosa">
             {name}
           </p>
-          <p className="text-sm leading-relaxed text-creme md:text-[15px]">{message}</p>
+          <p className="text-sm leading-relaxed text-creme md:text-[15px]">
+            <Typewriter text={message} />
+          </p>
         </div>
       </div>
     </motion.div>
