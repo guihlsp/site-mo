@@ -19,6 +19,35 @@ export default function EmotionalClimax() {
           </span>
         </Reveal>
 
+        {/* A Mo pulando de dentro do presente "For You": o presente é ela.
+            Salta com mola ao entrar na tela e flutua de leve. */}
+        <motion.div
+          initial={{ opacity: 0, y: 70, scale: 0.6 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ type: "spring", stiffness: 140, damping: 12, delay: 0.1 }}
+          className="relative -mb-2"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-x-4 bottom-6 -z-10 h-24 rounded-full bg-rosa-forte/25 blur-3xl"
+          />
+          <motion.div
+            animate={reducedMotion ? undefined : { y: [0, -9, 0] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+            className="relative mx-auto w-[62vw] max-w-[300px]"
+            style={{ aspectRatio: "562 / 820" }}
+          >
+            <Image
+              src="/guide/mo-presente.webp"
+              alt="A Mo, em versão boneca de feltro, saindo de uma caixa de presente escrita “For You”"
+              fill
+              sizes="(max-width: 768px) 62vw, 300px"
+              className="object-contain drop-shadow-[0_22px_36px_rgba(8,1,4,0.55)]"
+            />
+          </motion.div>
+        </motion.div>
+
         {/* Foto com auréola dourada e respiração lenta */}
         <Reveal delay={0.1} className="relative">
           <div
