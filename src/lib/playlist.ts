@@ -22,6 +22,5 @@ export const playlist: Track[] = [
   { title: "Sparks", artist: "Coldplay", src: "/audio/musica-2.mp3" },
   { title: "Best Part", artist: "Daniel Caesar, H.E.R.", src: "/audio/musica-3.mp3" },
   { title: "Those Eyes", artist: "New West", src: "/audio/musica-4.mp3" },
-  // Confira o nome desta: o arquivo só dizia "giveon"
-  { title: "For Tonight", artist: "Giveon", src: "/audio/musica-5.mp3" },
+  { title: "Like I Want You", artist: "Giveon", src: "/audio/musica-5.mp3" },
 ];
