@@ -11,10 +11,23 @@ import { texts } from "@/lib/texts";
 type GiftCard = { number: string; pin: string };
 type Status = "idle" | "loading" | "error" | "server-error" | "success";
 
-/** Cadeado desenhado à mão que abre quando ela acerta */
-function Padlock({ open }: { open: boolean }) {
+/** Cadeado desenhado à mão que abre quando ela acerta (e treme no erro) */
+function Padlock({ open, shakeKey = 0 }: { open: boolean; shakeKey?: number }) {
   return (
-    <div className="relative mx-auto size-20">
+    <motion.div
+      className="relative mx-auto size-20"
+      key={shakeKey}
+      animate={shakeKey > 0 && !open ? { x: [0, -7, 7, -5, 5, 0], rotate: [0, -3, 3, -2, 2, 0] } : {}}
+      transition={{ duration: 0.45 }}
+    >
+      {/* halo: dourado quando abre, vermelho-rosa quando nega */}
+      <motion.div
+        aria-hidden
+        initial={false}
+        animate={{ opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.8 }}
+        className="absolute -inset-4 rounded-full bg-ouro/25 blur-2xl"
+      />
       <motion.svg
         viewBox="0 0 64 64"
         className="absolute inset-0 size-full"
@@ -50,7 +63,7 @@ function Padlock({ open }: { open: boolean }) {
           ✨
         </motion.span>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -161,7 +174,7 @@ export default function GiftVault() {
         />
 
         {status !== "success" && (
-          <GuideBubble variant="pensando" message={texts.vault.guideMessage} />
+          <GuideBubble variant="cofre" message={texts.vault.guideMessage} />
         )}
 
         <Reveal delay={0.1}>
@@ -186,7 +199,7 @@ export default function GiftVault() {
                   transition={{ duration: 0.4 }}
                   className="relative flex flex-col gap-6"
                 >
-                  <Padlock open={false} />
+                  <Padlock open={false} shakeKey={status === "error" ? shakeKey : 0} />
 
                   <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
                     <div className="flex items-baseline justify-between">
@@ -219,7 +232,12 @@ export default function GiftVault() {
                       }}
                       placeholder={texts.vault.inputPlaceholder}
                       disabled={loading}
-                      className="w-full rounded-xl border border-blush/20 bg-white/[0.05] px-4 py-3.5 text-center text-base tracking-widest text-creme outline-none transition-colors placeholder:text-rosado/40 placeholder:tracking-normal focus:border-rosa focus:ring-2 focus:ring-rosa/30 disabled:opacity-60"
+                      aria-invalid={status === "error"}
+                      className={`w-full rounded-xl border bg-white/[0.05] px-4 py-3.5 text-center text-base tracking-widest text-creme outline-none transition-colors placeholder:text-rosado/40 placeholder:tracking-normal disabled:opacity-60 ${
+                        status === "error"
+                          ? "border-rosa-forte ring-2 ring-rosa-forte/40 focus:border-rosa-forte focus:ring-rosa-forte/40"
+                          : "border-blush/20 focus:border-rosa focus:ring-2 focus:ring-rosa/30"
+                      }`}
                     />
 
                     <motion.button
@@ -244,6 +262,31 @@ export default function GiftVault() {
                       )}
                     </motion.button>
                   </form>
+
+                  {/* Alerta de senha incorreta (o segurança barrou) */}
+                  <AnimatePresence>
+                    {status === "error" && (
+                      <motion.div
+                        key={`wrong-${shakeKey}`}
+                        initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ type: "spring", stiffness: 320, damping: 20 }}
+                        role="alert"
+                        className="flex items-start gap-3 rounded-xl border border-rosa-forte/50 bg-rosa-forte/12 px-4 py-3"
+                      >
+                        <span aria-hidden className="text-lg leading-none">🚫</span>
+                        <div>
+                          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-rosa-forte">
+                            {texts.vault.wrongTitle}
+                          </p>
+                          <p className="mt-0.5 text-sm leading-relaxed text-blush">
+                            {texts.vault.wrongMessage}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Dica progressiva */}
                   <AnimatePresence mode="wait">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import GateRevealFx from "./GateRevealFx";
 import { useGate, type Stage } from "./GateProvider";
 
 /**
@@ -23,18 +24,28 @@ export default function Gate({
   locked?: React.ReactNode;
 }) {
   const { ready, isUnlocked, justUnlocked, clearJustUnlocked } = useGate();
+  const reducedMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const open = isUnlocked(stage);
+  const [playFx, setPlayFx] = useState(false);
 
-  // Auto-scroll só quando ESTA fase acabou de abrir por uma ação da usuária
+  // Quando ESTA fase abre por ação da usuária: rola até ela e toca o efeito
   useEffect(() => {
     if (justUnlocked !== stage) return;
-    const id = setTimeout(() => {
+    const startId = setTimeout(() => {
+      if (!reducedMotion) setPlayFx(true);
+    }, 0);
+    const scrollId = setTimeout(() => {
       ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       clearJustUnlocked();
     }, 80);
-    return () => clearTimeout(id);
-  }, [justUnlocked, stage, clearJustUnlocked]);
+    const fxId = setTimeout(() => setPlayFx(false), 1800);
+    return () => {
+      clearTimeout(startId);
+      clearTimeout(scrollId);
+      clearTimeout(fxId);
+    };
+  }, [justUnlocked, stage, clearJustUnlocked, reducedMotion]);
 
   if (!ready || !open) {
     return locked ? <div ref={ref}>{locked}</div> : <div ref={ref} aria-hidden />;
@@ -46,7 +57,9 @@ export default function Gate({
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.21, 0.65, 0.36, 1] }}
+      className="relative"
     >
+      <AnimatePresence>{playFx && <GateRevealFx key="fx" />}</AnimatePresence>
       {children}
     </motion.div>
   );

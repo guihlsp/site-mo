@@ -349,6 +349,8 @@ export const texts = {
     submitButton: "Destrancar cofre",
     loadingText: "conferindo com o coração…",
     attemptsLabel: "tentativa",
+    wrongTitle: "Acesso negado",
+    wrongMessage: "Essa não foi… o segurança aqui não deixou passar. Tenta de novo 💔",
     guideSuccessMessage:
       "EU SABIA que você ia conseguir! Tá… confesso que fiquei nervoso na terceira tentativa. Aproveita o presente, meu amor! 🎉",
     successTitle: "Cofre aberto!",
