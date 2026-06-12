@@ -117,7 +117,141 @@ async function celebrate() {
   }
 }
 
+// As respostas das camadas NAO ficam no front — a validacao e toda no
+// servidor (/api/unlock com { check, value }). Aqui so guardamos o que ela
+// digita e perguntamos pro servidor se aquela camada passou.
+
+type Step = "name" | "birthday" | "carimbo" | "password";
+const STEP_ORDER: Step[] = ["name", "birthday", "carimbo", "password"];
+
+/** Loader customizado: três pontinhos em onda (herda a cor do texto). */
+function VaultLoader() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="block size-1.5 rounded-full bg-current"
+          animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+        />
+      ))}
+    </span>
+  );
+}
+
+/** Uma etapa de identificação (nome, aniversário ou carimbo). */
+function IdStep({
+  stepKey,
+  title,
+  label,
+  placeholder,
+  value,
+  onChange,
+  onContinue,
+  onBack,
+  error,
+  errorMsg,
+  loading = false,
+  inputMode = "text",
+}: {
+  stepKey: string;
+  title: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  onContinue: () => void;
+  onBack?: () => void;
+  error: boolean;
+  errorMsg: string;
+  loading?: boolean;
+  inputMode?: "text" | "numeric";
+}) {
+  return (
+    <motion.form
+      key={stepKey}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onContinue();
+      }}
+      initial={{ opacity: 0, x: 28 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -28 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col gap-3"
+    >
+      <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-ouro">{title}</span>
+      <label htmlFor={`vault-${stepKey}`} className="text-sm leading-relaxed text-rosado">
+        {label}
+      </label>
+      <input
+        id={`vault-${stepKey}`}
+        type="text"
+        inputMode={inputMode}
+        autoComplete="off"
+        autoCapitalize={stepKey === "name" ? "words" : "none"}
+        autoCorrect="off"
+        spellCheck={false}
+        maxLength={80}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={loading}
+        aria-invalid={error}
+        className={`w-full rounded-xl border bg-white/[0.05] px-4 py-3.5 text-center text-base text-creme outline-none transition-colors placeholder:text-rosado/40 ${
+          error
+            ? "border-rosa-forte ring-2 ring-rosa-forte/40 focus:border-rosa-forte focus:ring-rosa-forte/40"
+            : "border-blush/20 focus:border-rosa focus:ring-2 focus:ring-rosa/30"
+        }`}
+      />
+
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            role="alert"
+            className="rounded-xl border border-rosa-forte/50 bg-rosa-forte/12 px-4 py-2.5 text-sm leading-relaxed text-blush"
+          >
+            🚫 {errorMsg}
+          </motion.p>
+        )}
+      </AnimatePresence>
+
+      <div className="mt-1 flex items-center justify-between gap-3">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs font-semibold uppercase tracking-[0.16em] text-rosado/70 transition-colors hover:text-creme"
+          >
+            ← {texts.vault.backButton}
+          </button>
+        ) : (
+          <span />
+        )}
+        <motion.button
+          type="submit"
+          disabled={!value.trim() || loading}
+          whileTap={{ scale: 0.97 }}
+          className="flex items-center gap-2 rounded-xl bg-rosa-forte px-6 py-3 text-sm font-bold text-creme transition-all hover:bg-rosa disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {loading ? <VaultLoader /> : <>{texts.vault.continueButton} →</>}
+        </motion.button>
+      </div>
+    </motion.form>
+  );
+}
+
 export default function GiftVault() {
+  const [step, setStep] = useState<Step>("name");
+  const [fullName, setFullName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [carimbo, setCarimbo] = useState("");
+  const [stepError, setStepError] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [wrongAttempts, setWrongAttempts] = useState(0);
@@ -127,6 +261,41 @@ export default function GiftVault() {
 
   const loading = status === "loading";
   const hint = wrongAttempts > 0 ? hintForAttempt(wrongAttempts) : null;
+  const stepNumber = STEP_ORDER.indexOf(step) + 1;
+
+  function failStep() {
+    setStepError(true);
+    setShakeKey((k) => k + 1);
+    if (typeof navigator !== "undefined") navigator.vibrate?.(120);
+  }
+
+  // Valida uma camada NO SERVIDOR (a resposta nunca chega ao front).
+  async function checkLayer(layer: Step, value: string, next: Step) {
+    if (!value.trim() || checking) return;
+    setChecking(true);
+    try {
+      const res = await fetch("/api/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ check: layer, value }),
+      });
+      const data = (await res.json()) as { ok?: boolean };
+      if (data.ok) {
+        setStepError(false);
+        setStep(next);
+      } else {
+        failStep();
+      }
+    } catch {
+      failStep();
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  const advanceName = () => checkLayer("name", fullName, "birthday");
+  const advanceBirthday = () => checkLayer("birthday", birthday, "carimbo");
+  const advanceCarimbo = () => checkLayer("carimbo", carimbo, "password");
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -137,7 +306,7 @@ export default function GiftVault() {
       const response = await fetch("/api/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, name: fullName, birthday, carimbo }),
       });
 
       if (response.status === 500) {
@@ -199,118 +368,208 @@ export default function GiftVault() {
                   transition={{ duration: 0.4 }}
                   className="relative flex flex-col gap-6"
                 >
-                  <Padlock open={false} shakeKey={status === "error" ? shakeKey : 0} />
+                  <Padlock open={false} shakeKey={status === "error" || stepError ? shakeKey : 0} />
 
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-                    <div className="flex items-baseline justify-between">
-                      <label
-                        htmlFor="vault-password"
-                        className="text-[11px] font-bold uppercase tracking-[0.24em] text-ouro"
-                      >
-                        {texts.vault.inputLabel}
-                      </label>
-                      {wrongAttempts > 0 && (
-                        <span className="text-[11px] text-rosado/80">
-                          {texts.vault.attemptsLabel} {wrongAttempts + 1}
-                        </span>
-                      )}
+                  {/* Indicador de camadas */}
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-rosado/70">
+                      {step === "password"
+                        ? texts.vault.passwordStepTitle
+                        : `${texts.vault.stepOf} ${stepNumber} / ${STEP_ORDER.length}`}
+                    </span>
+                    <div className="flex gap-1.5">
+                      {STEP_ORDER.map((s, i) => (
+                        <span
+                          key={s}
+                          className={`h-1.5 w-7 rounded-full transition-colors ${
+                            i < stepNumber - 1 ? "bg-ouro" : i === stepNumber - 1 ? "bg-rosa" : "bg-white/10"
+                          }`}
+                        />
+                      ))}
                     </div>
+                  </div>
 
-                    <input
-                      id="vault-password"
-                      type="text"
-                      inputMode="text"
-                      autoComplete="off"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      maxLength={64}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (status === "error") setStatus("idle");
-                      }}
-                      placeholder={texts.vault.inputPlaceholder}
-                      disabled={loading}
-                      aria-invalid={status === "error"}
-                      className={`w-full rounded-xl border bg-white/[0.05] px-4 py-3.5 text-center text-base tracking-widest text-creme outline-none transition-colors placeholder:text-rosado/40 placeholder:tracking-normal disabled:opacity-60 ${
-                        status === "error"
-                          ? "border-rosa-forte ring-2 ring-rosa-forte/40 focus:border-rosa-forte focus:ring-rosa-forte/40"
-                          : "border-blush/20 focus:border-rosa focus:ring-2 focus:ring-rosa/30"
-                      }`}
-                    />
-
-                    <motion.button
-                      type="submit"
-                      disabled={loading || !password.trim()}
-                      whileTap={{ scale: 0.97 }}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-rosa-forte py-3.5 text-sm font-bold text-creme transition-all hover:bg-rosa disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {loading ? (
-                        <>
-                          <motion.span
-                            animate={{ scale: [1, 1.3, 1] }}
-                            transition={{ duration: 0.7, repeat: Infinity }}
-                            aria-hidden
-                          >
-                            ♥
-                          </motion.span>
-                          {texts.vault.loadingText}
-                        </>
-                      ) : (
-                        <>🔓 {texts.vault.submitButton}</>
-                      )}
-                    </motion.button>
-                  </form>
-
-                  {/* Alerta de senha incorreta (o segurança barrou) */}
-                  <AnimatePresence>
-                    {status === "error" && (
-                      <motion.div
-                        key={`wrong-${shakeKey}`}
-                        initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.97 }}
-                        transition={{ type: "spring", stiffness: 320, damping: 20 }}
-                        role="alert"
-                        className="flex items-start gap-3 rounded-xl border border-rosa-forte/50 bg-rosa-forte/12 px-4 py-3"
-                      >
-                        <span aria-hidden className="text-lg leading-none">🚫</span>
-                        <div>
-                          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-rosa-forte">
-                            {texts.vault.wrongTitle}
-                          </p>
-                          <p className="mt-0.5 text-sm leading-relaxed text-blush">
-                            {texts.vault.wrongMessage}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Dica progressiva */}
                   <AnimatePresence mode="wait">
-                    {hint && status === "error" && (
+                    {step === "name" && (
+                      <IdStep
+                        key="name"
+                        stepKey="name"
+                        title={texts.vault.nameStepTitle}
+                        label={texts.vault.nameLabel}
+                        placeholder={texts.vault.namePlaceholder}
+                        value={fullName}
+                        onChange={(v) => {
+                          setFullName(v);
+                          if (stepError) setStepError(false);
+                        }}
+                        onContinue={advanceName}
+                        error={stepError}
+                        errorMsg={texts.vault.nameError}
+                        loading={checking}
+                      />
+                    )}
+                    {step === "birthday" && (
+                      <IdStep
+                        key="birthday"
+                        stepKey="birthday"
+                        title={texts.vault.birthdayStepTitle}
+                        label={texts.vault.birthdayLabel}
+                        placeholder={texts.vault.birthdayPlaceholder}
+                        value={birthday}
+                        onChange={(v) => {
+                          setBirthday(v);
+                          if (stepError) setStepError(false);
+                        }}
+                        onContinue={advanceBirthday}
+                        onBack={() => {
+                          setStepError(false);
+                          setStep("name");
+                        }}
+                        error={stepError}
+                        errorMsg={texts.vault.birthdayError}
+                        loading={checking}
+                        inputMode="numeric"
+                      />
+                    )}
+                    {step === "carimbo" && (
+                      <IdStep
+                        key="carimbo"
+                        stepKey="carimbo"
+                        title={texts.vault.carimboStepTitle}
+                        label={texts.vault.carimboLabel}
+                        placeholder={texts.vault.carimboPlaceholder}
+                        value={carimbo}
+                        onChange={(v) => {
+                          setCarimbo(v);
+                          if (stepError) setStepError(false);
+                        }}
+                        onContinue={advanceCarimbo}
+                        onBack={() => {
+                          setStepError(false);
+                          setStep("birthday");
+                        }}
+                        error={stepError}
+                        errorMsg={texts.vault.carimboError}
+                        loading={checking}
+                        inputMode="numeric"
+                      />
+                    )}
+                    {step === "password" && (
                       <motion.div
-                        key={wrongAttempts}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="rounded-xl border-l-2 border-ouro bg-ouro/[0.07] px-4 py-3"
+                        key="password"
+                        initial={{ opacity: 0, x: 28 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -28 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col gap-6"
                       >
-                        <p className="text-sm leading-relaxed text-champanhe">💡 {hint}</p>
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+                          <div className="flex items-baseline justify-between">
+                            <label
+                              htmlFor="vault-password"
+                              className="text-[11px] font-bold uppercase tracking-[0.24em] text-ouro"
+                            >
+                              {texts.vault.inputLabel}
+                            </label>
+                            {wrongAttempts > 0 && (
+                              <span className="text-[11px] text-rosado/80">
+                                {texts.vault.attemptsLabel} {wrongAttempts + 1}
+                              </span>
+                            )}
+                          </div>
+
+                          <input
+                            id="vault-password"
+                            type="text"
+                            inputMode="text"
+                            autoComplete="off"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
+                            maxLength={64}
+                            value={password}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              if (status === "error") setStatus("idle");
+                            }}
+                            placeholder={texts.vault.inputPlaceholder}
+                            disabled={loading}
+                            aria-invalid={status === "error"}
+                            className={`w-full rounded-xl border bg-white/[0.05] px-4 py-3.5 text-center text-base tracking-widest text-creme outline-none transition-colors placeholder:text-rosado/40 placeholder:tracking-normal disabled:opacity-60 ${
+                              status === "error"
+                                ? "border-rosa-forte ring-2 ring-rosa-forte/40 focus:border-rosa-forte focus:ring-rosa-forte/40"
+                                : "border-blush/20 focus:border-rosa focus:ring-2 focus:ring-rosa/30"
+                            }`}
+                          />
+
+                          <motion.button
+                            type="submit"
+                            disabled={loading || !password.trim()}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-rosa-forte py-3.5 text-sm font-bold text-creme transition-all hover:bg-rosa disabled:cursor-not-allowed disabled:opacity-45"
+                          >
+                            {loading ? (
+                              <>
+                                <VaultLoader />
+                                {texts.vault.loadingText}
+                              </>
+                            ) : (
+                              <>🔓 {texts.vault.submitButton}</>
+                            )}
+                          </motion.button>
+                        </form>
+
+                        {/* Alerta de senha incorreta (o segurança barrou) */}
+                        <AnimatePresence>
+                          {status === "error" && (
+                            <motion.div
+                              key={`wrong-${shakeKey}`}
+                              initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.97 }}
+                              transition={{ type: "spring", stiffness: 320, damping: 20 }}
+                              role="alert"
+                              className="flex items-start gap-3 rounded-xl border border-rosa-forte/50 bg-rosa-forte/12 px-4 py-3"
+                            >
+                              <span aria-hidden className="text-lg leading-none">🚫</span>
+                              <div>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-rosa-forte">
+                                  {texts.vault.wrongTitle}
+                                </p>
+                                <p className="mt-0.5 text-sm leading-relaxed text-blush">
+                                  {texts.vault.wrongMessage}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Dica progressiva */}
+                        <AnimatePresence mode="wait">
+                          {hint && status === "error" && (
+                            <motion.div
+                              key={wrongAttempts}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.4 }}
+                              className="rounded-xl border-l-2 border-ouro bg-ouro/[0.07] px-4 py-3"
+                            >
+                              <p className="text-sm leading-relaxed text-champanhe">💡 {hint}</p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {status === "server-error" && (
+                          <div className="rounded-xl border-l-2 border-rosa-forte bg-rosa-forte/10 px-4 py-3">
+                            <p className="text-sm leading-relaxed text-blush">
+                              ⚡ {texts.vault.serverErrorMessage}
+                            </p>
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
-
-                  {status === "server-error" && (
-                    <div className="rounded-xl border-l-2 border-rosa-forte bg-rosa-forte/10 px-4 py-3">
-                      <p className="text-sm leading-relaxed text-blush">
-                        ⚡ {texts.vault.serverErrorMessage}
-                      </p>
-                    </div>
-                  )}
                 </motion.div>
               ) : (
                 <motion.div
