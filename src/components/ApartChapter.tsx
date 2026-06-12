@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import GuideBubble from "./GuideBubble";
 import Reveal from "./Reveal";
@@ -16,6 +16,109 @@ import { texts } from "@/lib/texts";
 const TOTAL_STITCHES = 5;
 const MAX_SEPARATION = 9;
 const STORAGE_KEY = "coracao-remendado";
+const SIGN_KEY = "contrato-assinado";
+const HOLD_MS = 1200;
+
+// Arcos que desenham uma digital estilizada
+const FINGERPRINT = [
+  "M26 80 C26 44 40 22 50 22 C60 22 74 44 74 80",
+  "M32 82 C32 50 43 34 50 34 C57 34 68 50 68 82",
+  "M38 84 C38 56 46 44 50 44 C54 44 62 56 62 84",
+  "M44 85 C44 64 48 56 50 56 C52 56 56 64 56 85",
+  "M49 86 C49 70 49 66 50 66 C51 66 51 70 51 86",
+];
+
+/** Pad de digital: ela segura o dedo pra "assinar" o contrato. */
+function FingerprintPad({ onSign }: { onSign: () => void }) {
+  const [holding, setHolding] = useState(false);
+  const [done, setDone] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function start() {
+    if (done) return;
+    setHolding(true);
+    timer.current = setTimeout(() => {
+      setDone(true);
+      setHolding(false);
+      if (typeof navigator !== "undefined") navigator.vibrate?.(60);
+      onSign();
+    }, HOLD_MS);
+  }
+  function cancel() {
+    if (done) return;
+    setHolding(false);
+    if (timer.current) clearTimeout(timer.current);
+  }
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  const t = texts.apart;
+  const active = holding || done;
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <motion.button
+        type="button"
+        onPointerDown={start}
+        onPointerUp={cancel}
+        onPointerLeave={cancel}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); start(); } }}
+        onKeyUp={cancel}
+        onContextMenu={(e) => e.preventDefault()}
+        disabled={done}
+        aria-label={done ? t.contractDone : t.contractHoldHint}
+        whileTap={done ? undefined : { scale: 0.95 }}
+        animate={done ? { scale: [1, 1.12, 1] } : undefined}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        style={{ touchAction: "none" }}
+        className="relative grid size-28 cursor-pointer place-items-center rounded-full border border-ouro/40 bg-white/[0.04] select-none disabled:cursor-default md:size-32"
+      >
+        {/* halo dourado ao concluir */}
+        <motion.span
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: done ? 1 : 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute -inset-3 rounded-full bg-ouro/25 blur-2xl"
+        />
+        <svg viewBox="0 0 100 100" className="relative w-16 md:w-20" aria-hidden>
+          {/* digital-contorno */}
+          {FINGERPRINT.map((d, i) => (
+            <path key={i} d={d} fill="none" stroke="#ff6b9a" strokeOpacity="0.45" strokeWidth="2.2" strokeLinecap="round" />
+          ))}
+          {/* preenchimento que sobe enquanto segura (clip via div externo) */}
+        </svg>
+        {/* camada preenchida, revelada de baixo pra cima conforme segura */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 grid place-items-center"
+          style={{
+            clipPath: active ? "inset(0 0 0 0)" : "inset(100% 0 0 0)",
+            transition: `clip-path ${holding ? HOLD_MS : 320}ms linear`,
+          }}
+        >
+          <svg viewBox="0 0 100 100" className="w-16 md:w-20" aria-hidden>
+            {FINGERPRINT.map((d, i) => (
+              <path key={i} d={d} fill="none" stroke="#ef3e6e" strokeWidth="2.6" strokeLinecap="round" />
+            ))}
+          </svg>
+        </div>
+        {done && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 240, damping: 12 }}
+            className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-ouro text-sm text-noite"
+          >
+            ✓
+          </motion.span>
+        )}
+      </motion.button>
+      <p aria-live="polite" className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rosado">
+        {done ? t.contractDone : holding ? t.contractHolding : t.contractHoldHint}
+      </p>
+    </div>
+  );
+}
 
 const STITCHES = [
   { x1: 43, y1: 27, x2: 55, y2: 22 },
@@ -153,6 +256,8 @@ function BrokenHeart({
 export default function ApartChapter({ children }: { children: React.ReactNode }) {
   const [stitched, setStitched] = useState(0);
   const [mended, setMended] = useState(false);
+  const [signed, setSigned] = useState(false);
+  const childrenRef = useRef<HTMLDivElement>(null);
   const done = stitched >= TOTAL_STITCHES;
 
   // Já costurou nesta sessão? Libera direto (refresh não tranca de novo).
@@ -163,9 +268,17 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
         setStitched(TOTAL_STITCHES);
         setMended(true);
       }
+      if (sessionStorage.getItem(SIGN_KEY) === "1") setSigned(true);
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  function sign() {
+    if (signed) return;
+    setSigned(true);
+    sessionStorage.setItem(SIGN_KEY, "1");
+    setTimeout(() => childrenRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+  }
 
   // Pequena pausa dramática entre fechar o coração e liberar o resto
   useEffect(() => {
@@ -248,12 +361,36 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
               </motion.p>
             )}
           </AnimatePresence>
+
+          {/* Coração inteiro → contrato pra assinar com a digital */}
+          <AnimatePresence>
+            {mended && !signed && (
+              <motion.div
+                key="contract"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="glass-strong mt-2 flex w-full max-w-sm flex-col items-center gap-5 rounded-3xl px-6 py-8"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-ouro">
+                  {texts.apart.contractTitle}
+                </p>
+                <p className="text-sm leading-relaxed text-rosado">
+                  {texts.apart.contractInstruction}
+                </p>
+                <FingerprintPad onSign={sign} />
+                <p className="text-xs text-rosado/60">{texts.apart.contractLocked}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
-      {/* O resto da história só existe com o coração inteiro */}
-      {mended && (
+      {/* O resto da história só existe com o coração inteiro E assinado */}
+      {signed && (
         <motion.div
+          ref={childrenRef}
           initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.21, 0.65, 0.36, 1] }}

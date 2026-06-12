@@ -308,6 +308,14 @@ export const texts = {
     mendLocked: "o resto da história só abre quando o coração estiver inteiro 🔒",
     mendDone: "inteiro de novo. como sempre devia ter ficado ✦",
     punchline: "cláusula nova do contrato: nunca mais. assinado, o chorão aqui ✍️",
+    // Gate de assinatura por digital (fecha o contrato e libera o final)
+    contractTitle: "Falta só a sua assinatura",
+    contractInstruction:
+      "Já assinei com lágrima e tudo. Agora encosta o dedo pra registrar a sua digital e validar o contrato — aí o resto se abre.",
+    contractHoldHint: "segure o dedo aqui pra assinar",
+    contractHolding: "registrando sua digital…",
+    contractDone: "contrato assinado pelos dois ✦ pode seguir",
+    contractLocked: "o final só abre depois da sua assinatura 🔒",
   },
 
   // ── Clímax emocional ───────────────────────────────────────────
