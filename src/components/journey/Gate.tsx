@@ -5,6 +5,22 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import GateRevealFx from "./GateRevealFx";
 import { useGate, type Stage } from "./GateProvider";
 
+/** Rolagem suave e lenta, com easing próprio (mais devagar que a nativa). */
+function smoothScrollTo(top: number, duration: number) {
+  const startY = window.scrollY;
+  const dist = top - startY;
+  let start: number | null = null;
+  function step(ts: number) {
+    if (start === null) start = ts;
+    const p = Math.min((ts - start) / duration, 1);
+    // easeInOutQuad
+    const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    window.scrollTo(0, startY + dist * eased);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 /**
  * Renderiza os filhos só quando o estágio está liberado — antes disso
  * mostra (opcionalmente) um aviso de trancado. Quando a fase abre por
@@ -32,14 +48,24 @@ export default function Gate({
   // Quando ESTA fase abre por ação da usuária: rola até ela e toca o efeito
   useEffect(() => {
     if (justUnlocked !== stage) return;
+    // 1) dispara o efeito já no instante do desbloqueio (tela cheia)
     const startId = setTimeout(() => {
       if (!reducedMotion) setPlayFx(true);
     }, 0);
+    // 2) espera um respiro pra ela VER o efeito, depois rola devagar
     const scrollId = setTimeout(() => {
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const el = ref.current;
+      if (el) {
+        if (reducedMotion) {
+          el.scrollIntoView({ block: "start" });
+        } else {
+          const top = window.scrollY + el.getBoundingClientRect().top - 24;
+          smoothScrollTo(top, 1500);
+        }
+      }
       clearJustUnlocked();
-    }, 80);
-    const fxId = setTimeout(() => setPlayFx(false), 1800);
+    }, 520);
+    const fxId = setTimeout(() => setPlayFx(false), 2200);
     return () => {
       clearTimeout(startId);
       clearTimeout(scrollId);
