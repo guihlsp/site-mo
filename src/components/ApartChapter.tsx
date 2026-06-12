@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import GateRevealFx from "./journey/GateRevealFx";
 import { smoothScrollToEl } from "./journey/scroll";
@@ -20,6 +20,8 @@ const MAX_SEPARATION = 9;
 const STORAGE_KEY = "coracao-remendado";
 const SIGN_KEY = "contrato-assinado";
 const HOLD_MS = 1200;
+// "o mundo sem ela perdeu a cor": dessaturação máxima nesse capítulo
+const MAX_DESAT = 1;
 
 // Arcos que desenham uma digital estilizada
 const FINGERPRINT = [
@@ -262,7 +264,51 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
   const [signed, setSigned] = useState(false);
   const [playFx, setPlayFx] = useState(false);
   const childrenRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const stitchedRef = useRef(stitched);
   const done = stitched >= TOTAL_STITCHES;
+
+  // Aplica a dessaturação (preto-e-branco) no fundo conforme a seção entra na
+  // tela e conforme o coração ainda NÃO foi costurado. Direto no DOM (sem
+  // re-render) pra ficar leve no scroll.
+  const applyDesat = useCallback(() => {
+    const sec = sectionRef.current;
+    const ov = overlayRef.current;
+    if (!sec || !ov) return;
+    const rect = sec.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    // 0 quando a seção está logo abaixo da tela; 1 quando já subiu pra dentro
+    const enter = Math.min(Math.max((vh - rect.top) / (vh * 0.8), 0), 1);
+    const mendFactor = 1 - stitchedRef.current / TOTAL_STITCHES; // 1 → 0 ao costurar
+    const d = Math.min(enter * mendFactor, 1) * MAX_DESAT;
+    const filter = `grayscale(${d}) brightness(${1 - d * 0.12})`;
+    ov.style.backdropFilter = filter;
+    ov.style.setProperty("-webkit-backdrop-filter", filter);
+    ov.style.opacity = d > 0.01 ? "1" : "0";
+  }, []);
+
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(applyDesat);
+    };
+    applyDesat();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [applyDesat]);
+
+  // a cada ponto costurado: atualiza o ref e recolore aos poucos
+  useEffect(() => {
+    stitchedRef.current = stitched;
+    applyDesat();
+  }, [stitched, applyDesat]);
 
   // Já costurou nesta sessão? Libera direto (refresh não tranca de novo).
   // Adiado para o próximo tick: evita renders em cascata dentro do effect.
@@ -311,7 +357,16 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
     <>
       <AnimatePresence>{playFx && <GateRevealFx key="apart-fx" />}</AnimatePresence>
 
-      <section className="relative px-6 py-24 md:py-32">
+      {/* Overlay que tira a cor do mundo (preto-e-branco) enquanto o coração
+          não é costurado — controlado direto no DOM por applyDesat(). */}
+      <div
+        ref={overlayRef}
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-[60]"
+        style={{ opacity: 0, transition: "backdrop-filter 0.45s ease, opacity 0.45s ease", willChange: "backdrop-filter" }}
+      />
+
+      <section ref={sectionRef} className="relative px-6 py-24 md:py-32">
         {/* o clima esfria: névoa azulada só nesta seção */}
         <div
           aria-hidden
