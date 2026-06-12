@@ -133,8 +133,8 @@ export const texts = {
         text: "Porque você enfrenta o mundo de cabeça erguida e ainda sobra espaço pra cuidar de quem ama.",
       },
       {
-        keyword: "Seu colo",
-        text: "Porque existe descanso de corpo e descanso de alma: você é os dois ao mesmo tempo.",
+        keyword: "Sua coçadinha",
+        text: "Porque a famosa coçadinha de cabeça me faz dormir em qualquer lugar e hora. Meu botão de desligar é oficialmente a ponta dos seus dedos.",
       },
       {
         keyword: "Seu jeito",
