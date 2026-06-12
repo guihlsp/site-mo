@@ -23,4 +23,5 @@ export const playlist: Track[] = [
   { title: "Best Part", artist: "Daniel Caesar, H.E.R.", src: "/audio/musica-3.mp3" },
   { title: "Those Eyes", artist: "New West", src: "/audio/musica-4.mp3" },
   { title: "Like I Want You", artist: "Giveon", src: "/audio/musica-5.mp3" },
+  { title: "Lay Me Down", artist: "Sam Smith", src: "/audio/musica-6.mp3" },
 ];
