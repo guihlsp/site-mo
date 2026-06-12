@@ -223,7 +223,7 @@ export const texts = {
       { label: "Drinks da bartender da casa", value: 100, note: "deliciosos; pagamento aceito em beijos" },
       { label: "Talento na cozinha", value: 100, note: "vive inventando um prato novo só pra me surpreender. funciona" },
       { label: "Fé na carteira de motorista chegando", value: 100, note: "autoescola que lute, você já nasceu aprovada" },
-      { label: "Talento pra gastar dinheiro", value: 100, note: "o gift card no fim deste site não é coincidência" },
+      { label: "Talento pra gastar dinheiro", value: 100, note: "o presente no fim deste site não é coincidência" },
     ],
     specimenLabel: "amostra nº 01 · única",
     overflowLabel: "Nível geral de maravilhosa",
@@ -284,6 +284,10 @@ export const texts = {
       "Senti sua falta nos detalhes: na piada que ninguém entendia, na música que tocava sozinha, no domingo que não rendia.",
       "Mas a gente se reencontrou e se escolheu de novo, dessa vez sabendo exatamente do que a vida sem o outro era feita. Não existe prova de amor maior que essa.",
     ],
+    mendInstruction: "nosso coração quebrou. toque nele para costurar, ponto por ponto",
+    mendProgressLabel: "ponto",
+    mendLocked: "o resto da história só abre quando o coração estiver inteiro 🔒",
+    mendDone: "inteiro de novo. como sempre devia ter ficado ✦",
     punchline: "cláusula nova do contrato: nunca mais. assinado, o chorão aqui ✍️",
   },
 
@@ -339,6 +343,34 @@ export const texts = {
     networkErrorMessage: "A conexão falhou no meio do romance. Tenta de novo?",
   },
 
+  // ── Frases rápidas ao cutucar o bonequinho (qualquer guia) ─────
+  guide: {
+    tapPhrases: [
+      "Te amo muito!",
+      "Só penso em você.",
+      "Ei! Tá linda hoje. De novo.",
+      "Cutucou o guia, ganhou um beijo. 😘",
+      "Moça, isso é assédio. Continue.",
+      "Eu de bolso, seu pra sempre.",
+      "Saudade até com você do lado.",
+      "127% mais linda hoje. Dado oficial.",
+      "Toque registrado. Amor retribuído.",
+      "Se apertar de novo, eu caso.",
+      "Você é minha pessoa favorita.",
+      "Psiu… te amo. Passa adiante.",
+      "Cuidado: boneco derrete por você.",
+      "Mozão detectada! Coração a 220bpm.",
+      "Para de me cutucar e vem me beijar.",
+      "Ai! Era aqui que doía de amor.",
+      "Sou de feltro, mas o amor é real.",
+      "Aperta de novo que eu gosto.",
+      "Já disse que te amo? Pois é. Te amo.",
+      "Cócegas não! Beijos sim.",
+      "Meu plano pra hoje: você.",
+      "Quem me programou mandou te amar. Obedeço feliz.",
+    ],
+  },
+
   player: {
     miniLabel: "tocar nossa trilha",
     ariaPlay: "Tocar música",
@@ -351,7 +383,7 @@ export const texts = {
 
   footer: {
     endingLine: "fim? que nada. a gente tá só começando ♥",
-    line1: "feito à mão, com amor, café e Ctrl+Z",
+    line1: "feito à mão, com amor, café e IA",
     line2: "Guizão ♥ Nath · v1.0 do nosso pra sempre · desde 19.03.2022",
   },
 } as const;

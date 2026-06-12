@@ -42,34 +42,35 @@ export default function Home() {
       {/* 5 · Galeria especial */}
       <PhotoGallery />
 
-      {/* 6 · O capítulo difícil (período separados) */}
-      <ApartChapter />
+      {/* 6 · O capítulo difícil: o coração partido é um portão — ela
+          precisa costurá-lo para liberar o clímax, o cofre e o final */}
+      <ApartChapter>
+        {/* 7 · Clímax emocional */}
+        <EmotionalClimax />
 
-      {/* 7 · Clímax emocional */}
-      <EmotionalClimax />
+        {/* 8 · Cofre final com o gift card */}
+        <GiftVault />
 
-      {/* 8 · Cofre final com o gift card */}
-      <GiftVault />
-
-      {/* Cena final: nós dois de feltro (respiro extra embaixo p/ o player fixo) */}
-      <footer className="relative px-6 pb-36 pt-6 text-center">
-        <div className="mx-auto mb-7 h-52 w-44 animate-[float-soft_7s_ease-in-out_infinite] md:h-64 md:w-52">
-          <div className="relative size-full">
-            <Image
-              src="/guide/mo-e-eu.png"
-              alt="Nós dois, em versão bonecos de feltro, abraçados"
-              fill
-              sizes="(max-width: 768px) 176px, 208px"
-              className="object-contain drop-shadow-[0_18px_28px_rgba(8,1,4,0.55)]"
-            />
+        {/* Cena final: nós dois de feltro (respiro extra embaixo p/ o player fixo) */}
+        <footer className="relative px-6 pb-36 pt-6 text-center">
+          <div className="mx-auto mb-7 h-52 w-44 animate-[float-soft_7s_ease-in-out_infinite] md:h-64 md:w-52">
+            <div className="relative size-full">
+              <Image
+                src="/guide/mo-e-eu.png"
+                alt="Nós dois, em versão bonecos de feltro, abraçados"
+                fill
+                sizes="(max-width: 768px) 176px, 208px"
+                className="object-contain drop-shadow-[0_18px_28px_rgba(8,1,4,0.55)]"
+              />
+            </div>
           </div>
-        </div>
-        <p className="font-hand text-3xl text-ouro">{texts.footer.endingLine}</p>
-        <p className="mt-4 font-hand text-2xl text-rosa/90">{texts.footer.line1}</p>
-        <p className="mt-1.5 text-xs uppercase tracking-[0.24em] text-rosado/70">
-          {texts.footer.line2}
-        </p>
-      </footer>
+          <p className="font-hand text-3xl text-ouro">{texts.footer.endingLine}</p>
+          <p className="mt-4 font-hand text-2xl text-rosa/90">{texts.footer.line1}</p>
+          <p className="mt-1.5 text-xs uppercase tracking-[0.24em] text-rosado/70">
+            {texts.footer.line2}
+          </p>
+        </footer>
+      </ApartChapter>
     </main>
   );
 }
