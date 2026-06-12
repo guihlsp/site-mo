@@ -5,9 +5,11 @@ import { AnimatePresence, motion } from "motion/react";
 import GuideBubble from "./GuideBubble";
 import Reveal from "./Reveal";
 import SectionTitle from "./SectionTitle";
+import { useGate } from "./journey/GateProvider";
 import { texts } from "@/lib/texts";
 
 export default function CoupleQuiz() {
+  const { unlock } = useGate();
   const questions = texts.quiz.questions;
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -23,6 +25,9 @@ export default function CoupleQuiz() {
   function advance() {
     if (isLast) {
       setFinished(true);
+      // respondeu tudo → libera o resto da jornada (o <Gate stage="quiz">
+      // revela o conteúdo seguinte e rola até ele)
+      unlock("quiz");
     } else {
       setStep((s) => s + 1);
       setSelected(null);

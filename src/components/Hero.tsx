@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useGate } from "./journey/GateProvider";
 import { requestPlayerStart } from "@/lib/player-bus";
 import { playlist } from "@/lib/playlist";
 import { texts } from "@/lib/texts";
@@ -87,11 +88,14 @@ function StaggeredTitle() {
 
 export default function Hero() {
   const hasMusic = playlist.length > 0;
+  const { isUnlocked, unlock } = useGate();
+  const started = isUnlocked("start");
 
   function startJourney() {
     // O play precisa nascer dentro do toque dela (política de autoplay)
     if (hasMusic) requestPlayerStart();
-    document.getElementById("jornada")?.scrollIntoView({ behavior: "smooth" });
+    // Libera o resto do site; o <Gate stage="start"> rola até a jornada sozinho.
+    unlock("start");
   }
 
   return (
@@ -183,11 +187,13 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Indicador de scroll */}
+      {/* Indicador de scroll — só faz sentido depois de começar (antes o
+          scroll fica travado), então fica escondido até clicar em começar */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.8, duration: 1 }}
+        animate={{ opacity: started ? 1 : 0 }}
+        transition={{ delay: started ? 0 : 2.8, duration: 1 }}
+        aria-hidden={!started}
         className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 text-rosado/70"
       >
         <span className="font-hand text-lg">{texts.hero.scrollHint}</span>

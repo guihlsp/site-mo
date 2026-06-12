@@ -26,8 +26,10 @@ export type GuideVariant =
   | "acenando"
   | "apaixonado"
   | "apontando"
+  | "bilheteiro"
   | "comemorando"
   | "engracado"
+  | "oraculo"
   | "orgulhoso"
   | "pensando"
   | "presente"
@@ -38,8 +40,10 @@ const MOODS: Record<GuideVariant, { emoji: string; mood: string }> = {
   acenando: { emoji: "👋", mood: "modo: oi!" },
   apaixonado: { emoji: "😍", mood: "modo: apaixonado" },
   apontando: { emoji: "☝️", mood: "modo: atenção" },
+  bilheteiro: { emoji: "🎟️", mood: "modo: bilheteria" },
   comemorando: { emoji: "🥳", mood: "modo: festa" },
   engracado: { emoji: "😜", mood: "modo: piada" },
+  oraculo: { emoji: "🔮", mood: "modo: oráculo" },
   orgulhoso: { emoji: "😌", mood: "modo: orgulho" },
   pensando: { emoji: "🤔", mood: "modo: hmm…" },
   presente: { emoji: "🎁", mood: "modo: presente" },

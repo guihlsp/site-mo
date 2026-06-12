@@ -273,6 +273,25 @@ export const texts = {
     } as Record<string, string>,
   },
 
+  // ── Portões da jornada (liberam o site por etapas) ─────────────
+  gates: {
+    // Aviso quando o trecho ainda está trancado pelo quiz
+    quizLocked:
+      "Ei, sem pular etapa 👀 — termine o quiz aí em cima e o resto da jornada se abre sozinho.",
+    // Desafio fofo depois das promessas, que libera o museu
+    museu: {
+      eyebrow: "bilheteria do museu",
+      title: "Falta só carimbar o ingresso",
+      guideMessage:
+        "Cheguei na portaria do nosso museu de bolso! Regra da casa: ninguém entra sem carimbar o ingresso. Toca no coração até ele encher — considera isso o seu pedágio de fofura. 🎟️",
+      instruction: "toque no coração até encher pra validar a entrada",
+      tapHint: "toca aqui ♥",
+      progressLabel: "carimbando…",
+      done: "ingresso validado — pode entrar ✦",
+      lockedNote: "o acervo abre assim que o ingresso for carimbado 🔒",
+    },
+  },
+
   // ── O capítulo difícil (período separados) ─────────────────────
   apart: {
     eyebrow: "o capítulo difícil",

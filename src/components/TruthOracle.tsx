@@ -129,7 +129,7 @@ export default function TruthOracle() {
           </div>
         </Reveal>
 
-        <GuideBubble variant="surpreso" message={texts.oracle.guideMessage} side="right" />
+        <GuideBubble variant="oraculo" message={texts.oracle.guideMessage} side="right" />
       </div>
     </section>
   );
