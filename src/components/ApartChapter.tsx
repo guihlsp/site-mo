@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import GateRevealFx from "./journey/GateRevealFx";
+import { smoothScrollToEl } from "./journey/scroll";
 import GuideBubble from "./GuideBubble";
 import Reveal from "./Reveal";
 import { texts } from "@/lib/texts";
@@ -29,9 +31,10 @@ const FINGERPRINT = [
 ];
 
 /** Pad de digital: ela segura o dedo pra "assinar" o contrato. */
-function FingerprintPad({ onSign }: { onSign: () => void }) {
+function FingerprintPad({ onSign, signed = false }: { onSign: () => void; signed?: boolean }) {
   const [holding, setHolding] = useState(false);
-  const [done, setDone] = useState(false);
+  // já assinado (ex.: refresh na sessão) → nasce no estado concluído
+  const [done, setDone] = useState(signed);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function start() {
@@ -257,6 +260,8 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
   const [stitched, setStitched] = useState(0);
   const [mended, setMended] = useState(false);
   const [signed, setSigned] = useState(false);
+  const [playFx, setPlayFx] = useState(false);
+  const reducedMotion = useReducedMotion();
   const childrenRef = useRef<HTMLDivElement>(null);
   const done = stitched >= TOTAL_STITCHES;
 
@@ -277,7 +282,18 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
     if (signed) return;
     setSigned(true);
     sessionStorage.setItem(SIGN_KEY, "1");
-    setTimeout(() => childrenRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+    // mesmo efeito de "portão liberado" dos outros gates
+    setPlayFx(true);
+    setTimeout(() => setPlayFx(false), 2200);
+    // dá um respiro pra ver o efeito e a confirmação, depois rola devagar
+    // enquadrando o clímax: título da seção, a Mo saindo do presente e a
+    // frase logo abaixo. (O card fica no lugar, então não há pulo de layout.)
+    setTimeout(() => {
+      const el = childrenRef.current;
+      if (!el) return;
+      if (reducedMotion) el.scrollIntoView({ block: "start" });
+      else smoothScrollToEl(el, 16, 1700);
+    }, 600);
   }
 
   // Pequena pausa dramática entre fechar o coração e liberar o resto
@@ -296,6 +312,8 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
 
   return (
     <>
+      <AnimatePresence>{playFx && <GateRevealFx key="apart-fx" />}</AnimatePresence>
+
       <section className="relative px-6 py-24 md:py-32">
         {/* o clima esfria: névoa azulada só nesta seção */}
         <div
@@ -362,37 +380,43 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
             )}
           </AnimatePresence>
 
-          {/* Coração inteiro → contrato pra assinar com a digital */}
+          {/* Coração inteiro → contrato pra assinar com a digital.
+              O card NÃO some ao assinar: vira a versão "assinado" e fica lá
+              (sem sumiço, sem pulo de layout). */}
           <AnimatePresence>
-            {mended && !signed && (
+            {mended && (
               <motion.div
                 key="contract"
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="glass-strong mt-2 flex w-full max-w-sm flex-col items-center gap-5 rounded-3xl px-6 py-8"
+                className={`mt-2 flex w-full max-w-sm flex-col items-center gap-5 rounded-3xl px-6 py-8 transition-colors duration-700 ${
+                  signed ? "glass-strong ring-1 ring-ouro/40" : "glass-strong"
+                }`}
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-ouro">
-                  {texts.apart.contractTitle}
+                  {signed ? texts.apart.contractSignedTitle : texts.apart.contractTitle}
                 </p>
                 <p className="text-sm leading-relaxed text-rosado">
-                  {texts.apart.contractInstruction}
+                  {signed ? texts.apart.contractSignedSubtitle : texts.apart.contractInstruction}
                 </p>
-                <FingerprintPad onSign={sign} />
-                <p className="text-xs text-rosado/60">{texts.apart.contractLocked}</p>
+                <FingerprintPad onSign={sign} signed={signed} />
+                <p className="text-xs text-rosado/60">
+                  {signed ? texts.apart.contractSignedNote : texts.apart.contractLocked}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </section>
 
-      {/* O resto da história só existe com o coração inteiro E assinado */}
+      {/* O resto da história só existe com o coração inteiro E assinado.
+          Só fade (sem deslocamento) pra não atrapalhar a mira do scroll. */}
       {signed && (
         <motion.div
           ref={childrenRef}
-          initial={{ opacity: 0, y: 36 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.9, ease: [0.21, 0.65, 0.36, 1] }}
         >
           {children}

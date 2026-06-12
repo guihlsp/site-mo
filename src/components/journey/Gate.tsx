@@ -3,23 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import GateRevealFx from "./GateRevealFx";
+import { smoothScrollToEl } from "./scroll";
 import { useGate, type Stage } from "./GateProvider";
-
-/** Rolagem suave e lenta, com easing próprio (mais devagar que a nativa). */
-function smoothScrollTo(top: number, duration: number) {
-  const startY = window.scrollY;
-  const dist = top - startY;
-  let start: number | null = null;
-  function step(ts: number) {
-    if (start === null) start = ts;
-    const p = Math.min((ts - start) / duration, 1);
-    // easeInOutQuad
-    const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-    window.scrollTo(0, startY + dist * eased);
-    if (p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
 
 /**
  * Renderiza os filhos só quando o estágio está liberado — antes disso
@@ -48,20 +33,15 @@ export default function Gate({
   // Quando ESTA fase abre por ação da usuária: rola até ela e toca o efeito
   useEffect(() => {
     if (justUnlocked !== stage) return;
-    // 1) dispara o efeito já no instante do desbloqueio (tela cheia)
-    const startId = setTimeout(() => {
-      if (!reducedMotion) setPlayFx(true);
-    }, 0);
+    // 1) dispara o efeito já no instante do desbloqueio (tela cheia).
+    //    Toca mesmo com reduced-motion: é curto, único e não fica repetindo.
+    const startId = setTimeout(() => setPlayFx(true), 0);
     // 2) espera um respiro pra ela VER o efeito, depois rola devagar
     const scrollId = setTimeout(() => {
       const el = ref.current;
       if (el) {
-        if (reducedMotion) {
-          el.scrollIntoView({ block: "start" });
-        } else {
-          const top = window.scrollY + el.getBoundingClientRect().top - 24;
-          smoothScrollTo(top, 1500);
-        }
+        if (reducedMotion) el.scrollIntoView({ block: "start" });
+        else smoothScrollToEl(el, 24, 1500);
       }
       clearJustUnlocked();
     }, 520);

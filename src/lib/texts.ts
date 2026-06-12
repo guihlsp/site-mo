@@ -316,6 +316,10 @@ export const texts = {
     contractHolding: "registrando sua digital…",
     contractDone: "contrato assinado pelos dois ✦ pode seguir",
     contractLocked: "o final só abre depois da sua assinatura 🔒",
+    contractSignedTitle: "Contrato assinado ✓",
+    contractSignedSubtitle:
+      "Pronto: as duas digitais registradas. Cláusula do “nunca mais” em vigor — sem data de validade.",
+    contractSignedNote: "válido pra sempre · assinado pelos dois 💍",
   },
 
   // ── Clímax emocional ───────────────────────────────────────────

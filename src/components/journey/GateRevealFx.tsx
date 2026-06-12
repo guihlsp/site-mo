@@ -32,23 +32,23 @@ export default function GateRevealFx() {
       aria-hidden
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 2, times: [0, 1], ease: "easeInOut" }}
+      transition={{ duration: 2.4, times: [0, 1], ease: "easeInOut" }}
       className="pointer-events-none fixed inset-0 z-[80] flex items-center justify-center overflow-hidden"
     >
-      {/* tintura quente cobrindo a tela, bem leve, que some */}
+      {/* tintura quente cobrindo a tela, que some */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.22, 0] }}
-        transition={{ duration: 1.6, ease: "easeOut" }}
-        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(232,184,115,0.4),rgba(239,62,110,0.16)_40%,transparent_72%)]"
+        animate={{ opacity: [0, 0.34, 0] }}
+        transition={{ duration: 1.9, ease: "easeOut" }}
+        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(232,184,115,0.5),rgba(239,62,110,0.22)_40%,transparent_74%)]"
       />
 
       {/* clarão central pulsando */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: [0, 0.95, 0], scale: [0.5, 1.25, 1.6] }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-        className="absolute size-80 rounded-full bg-[radial-gradient(circle,rgba(255,240,244,0.85),rgba(232,184,115,0.55)_40%,rgba(239,62,110,0.25)_65%,transparent_78%)] blur-xl"
+        animate={{ opacity: [0, 1, 0], scale: [0.5, 1.4, 1.8] }}
+        transition={{ duration: 1.8, ease: "easeOut" }}
+        className="absolute size-[26rem] rounded-full bg-[radial-gradient(circle,rgba(255,240,244,0.95),rgba(232,184,115,0.6)_40%,rgba(239,62,110,0.3)_65%,transparent_78%)] blur-xl"
       />
 
       {/* anel que se expande */}
