@@ -33,6 +33,7 @@ export type GuideVariant =
   | "orgulhoso"
   | "pensando"
   | "presente"
+  | "quiz"
   | "surpreso"
   | "triste";
 
@@ -47,6 +48,7 @@ const MOODS: Record<GuideVariant, { emoji: string; mood: string }> = {
   orgulhoso: { emoji: "😌", mood: "modo: orgulho" },
   pensando: { emoji: "🤔", mood: "modo: hmm…" },
   presente: { emoji: "🎁", mood: "modo: presente" },
+  quiz: { emoji: "🎤", mood: "modo: quiz show" },
   surpreso: { emoji: "😱", mood: "modo: uau" },
   triste: { emoji: "🥺", mood: "modo: saudade" },
 };

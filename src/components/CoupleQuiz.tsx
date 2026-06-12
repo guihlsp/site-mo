@@ -49,7 +49,7 @@ export default function CoupleQuiz() {
           subtitle={texts.quiz.subtitle}
         />
 
-        <GuideBubble variant="apaixonado" message={texts.quiz.guideMessage} side="right" />
+        <GuideBubble variant="quiz" message={texts.quiz.guideMessage} side="right" />
 
         <Reveal delay={0.1}>
           <div className="glass-strong overflow-hidden rounded-3xl p-6 md:p-8">
