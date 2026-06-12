@@ -1,6 +1,5 @@
 "use client";
 
-import { useReducedMotion } from "motion/react";
 import { floatingStickers } from "@/lib/floatingStickers";
 
 /**
@@ -16,7 +15,8 @@ import { floatingStickers } from "@/lib/floatingStickers";
  *
  * - pointer-events: none  → nunca rouba clique/scroll/toque
  * - aria-hidden + alt=""   → puramente decorativo p/ leitores de tela
- * - prefers-reduced-motion → ficam parados (sem animação)
+ * - prefers-reduced-motion → a travessia continua, porém bem mais lenta e
+ *     discreta (ver globals.css) — em vez de congelar tudo
  * - Animação 100% CSS (transform + opacity) → leve na GPU, sem re-render
  */
 
@@ -61,12 +61,12 @@ const PLACEMENTS: Placement[] = [
   { sticker: "ela-sorrindo",        dir: "tb",      lane: 8,  size: 118, opacityScale: 0.95, duration: 26, delay: -10, rotFrom: -9, rotTo: 5,   scale: 1, mobile: true },
   { sticker: "gui-bebendo-cerveja", dir: "rl",      lane: 62, size: 124, opacityScale: 0.95, duration: 29, delay: -23, rotFrom: 8,  rotTo: -6,  scale: 1, mobile: true },
   { sticker: "gui-safado",          dir: "lr",      lane: 45, size: 116, opacityScale: 0.85, duration: 22, delay: -16, rotFrom: 4,  rotTo: -9,  scale: 1, mobile: true },
-  { sticker: "ela-debochada",       dir: "diag-dr", lane: 20, size: 114, opacityScale: 0.85, duration: 33, delay: -4,  rotFrom: -7, rotTo: 8,   scale: 1, mobile: false },
-  { sticker: "gui-babando",         dir: "bt",      lane: 32, size: 110, opacityScale: 0.8,  duration: 28, delay: -12, rotFrom: 6,  rotTo: -7,  scale: 1, mobile: false },
-  { sticker: "ela-brava",           dir: "lr",      lane: 72, size: 112, opacityScale: 0.8,  duration: 25, delay: -19, rotFrom: -9, rotTo: 7,   scale: 1, mobile: false },
-  { sticker: "gui-fumando",         dir: "diag-ul", lane: 40, size: 104, opacityScale: 0.7,  duration: 34, delay: -8,  rotFrom: 8,  rotTo: -5,  scale: 1, mobile: false },
-  { sticker: "ela-cansada",         dir: "tb",      lane: 88, size: 110, opacityScale: 0.75, duration: 27, delay: -25, rotFrom: -5, rotTo: 9,   scale: 1, mobile: false },
-  { sticker: "ela-emburrada",       dir: "rl",      lane: 38, size: 100, opacityScale: 0.7,  duration: 31, delay: -3,  rotFrom: 5,  rotTo: -8,  scale: 1, mobile: false },
+  { sticker: "ela-debochada",       dir: "diag-dr", lane: 20, size: 114, opacityScale: 0.85, duration: 33, delay: -4,  rotFrom: -7, rotTo: 8,   scale: 1, mobile: true },
+  { sticker: "gui-babando",         dir: "bt",      lane: 32, size: 110, opacityScale: 0.8,  duration: 28, delay: -12, rotFrom: 6,  rotTo: -7,  scale: 1, mobile: true },
+  { sticker: "ela-brava",           dir: "lr",      lane: 72, size: 112, opacityScale: 0.8,  duration: 25, delay: -19, rotFrom: -9, rotTo: 7,   scale: 1, mobile: true },
+  { sticker: "gui-fumando",         dir: "diag-ul", lane: 40, size: 104, opacityScale: 0.7,  duration: 34, delay: -8,  rotFrom: 8,  rotTo: -5,  scale: 1, mobile: true },
+  { sticker: "ela-cansada",         dir: "tb",      lane: 88, size: 110, opacityScale: 0.75, duration: 27, delay: -25, rotFrom: -5, rotTo: 9,   scale: 1, mobile: true },
+  { sticker: "ela-emburrada",       dir: "rl",      lane: 38, size: 100, opacityScale: 0.7,  duration: 31, delay: -3,  rotFrom: 5,  rotTo: -8,  scale: 1, mobile: true },
   { sticker: "gui-apaixonado",      dir: "diag-dl", lane: 55, size: 122, opacityScale: 0.9,  duration: 30, delay: -17, rotFrom: -6, rotTo: 7,   scale: 1, mobile: true },
 ];
 
@@ -99,8 +99,6 @@ function path(dir: Dir, lane: number) {
 }
 
 export default function FloatingStickerBackground() {
-  const reducedMotion = useReducedMotion();
-
   return (
     <div
       aria-hidden
@@ -144,7 +142,6 @@ export default function FloatingStickerBackground() {
                 "--rot-from": `${p.rotFrom}deg`,
                 "--rot-to": `${p.rotTo}deg`,
                 "--scl": p.scale,
-                animationPlayState: reducedMotion ? "paused" : "running",
               } as React.CSSProperties
             }
           />

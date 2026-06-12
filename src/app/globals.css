@@ -354,16 +354,11 @@ body {
   }
 }
 
+/* Movimento reduzido: mantém a travessia (a graça da experiência), porém
+   bem mais devagar e discreta — em vez de congelar tudo no centro. */
 @media (prefers-reduced-motion: reduce) {
   .floating-sticker {
-    animation: none !important;
-    /* parado no meio do caminho (na tela), em vez de fora dela */
-    opacity: var(--vis);
-    transform: translate3d(
-        calc((var(--fx, -30vw) + var(--tx, 115vw)) / 2),
-        calc((var(--fy, 0px) + var(--ty, 0px)) / 2),
-        0
-      )
-      rotate(var(--rot-from, 0deg));
+    animation-duration: calc(var(--dur, 26s) * 2.6);
+    --vis: calc(var(--sticker-opacity, 0.18) * var(--op, 1) * 0.7);
   }
 }
