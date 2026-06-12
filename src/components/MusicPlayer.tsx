@@ -35,6 +35,8 @@ export default function MusicPlayer() {
   const gainRef = useRef<GainNode | null>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const errorCountRef = useRef(0);
+  // intenção de tocar (sobrevive às trocas de faixa, que disparam "pause")
+  const wantPlayRef = useRef(false);
 
   const [trackIndex, setTrackIndex] = useState(0);
   const [active, setActive] = useState(false);
@@ -67,7 +69,6 @@ export default function MusicPlayer() {
         setPlaying(true);
         setNeedsTap(false);
       });
-      el.addEventListener("pause", () => setPlaying(false));
       el.addEventListener("error", () => {
         errorCountRef.current += 1;
         if (errorCountRef.current >= total) {
@@ -128,6 +129,7 @@ export default function MusicPlayer() {
     ctxRef.current?.resume().catch(() => {});
     if (!el.src) el.src = radioPlaylist[0].src;
     fadeIn(muted ? 0 : volume);
+    wantPlayRef.current = true;
     el.play()
       .then(() => setPlaying(true))
       .catch(() => setNeedsTap(true));
@@ -140,7 +142,8 @@ export default function MusicPlayer() {
   });
   useEffect(() => onPlayerStart(() => startRef.current()), []);
 
-  // Troca de faixa (avanço automático ou prev/next)
+  // Troca de faixa (avanço automático ou prev/next). Usa a INTENÇÃO de tocar
+  // (wantPlayRef), não o estado `playing` — trocar o src dispara "pause".
   useEffect(() => {
     const el = audioRef.current;
     const src = radioPlaylist[trackIndex]?.src;
@@ -148,9 +151,13 @@ export default function MusicPlayer() {
     const absolute = new URL(src, window.location.origin).href;
     if (el.src !== absolute) {
       el.src = src;
-      if (playing) el.play().catch(() => {});
+      if (wantPlayRef.current) {
+        el.play()
+          .then(() => setPlaying(true))
+          .catch(() => {});
+      }
     }
-  }, [trackIndex, active, playing]);
+  }, [trackIndex, active]);
 
   useEffect(() => {
     return () => {
@@ -163,12 +170,14 @@ export default function MusicPlayer() {
   function togglePlay() {
     const el = ensureAudio();
     if (playing) {
+      wantPlayRef.current = false;
       el.pause();
       setPlaying(false);
     } else {
       ctxRef.current?.resume().catch(() => {});
       if (!el.src && total > 0) el.src = radioPlaylist[trackIndex].src;
       applyVolume(muted ? 0 : volume);
+      wantPlayRef.current = true;
       el.play()
         .then(() => setPlaying(true))
         .catch(() => setNeedsTap(true));
@@ -225,15 +234,15 @@ export default function MusicPlayer() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 220, damping: 24 }}
-          className="glass-strong fixed inset-x-4 bottom-4 z-[75] flex flex-col gap-2 rounded-2xl px-3.5 py-3 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[360px]"
+          className="glass-strong fixed inset-x-3 bottom-3 z-[75] flex flex-col gap-1.5 rounded-2xl px-3 py-2 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[360px] sm:gap-2 sm:px-3.5 sm:py-3"
         >
-          {/* Cabeçalho da estação */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-ouro">
+          {/* Cabeçalho da estação (compacto) */}
+          <div className="flex items-center justify-between gap-2 leading-none">
+            <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-ouro sm:text-[10px]">
               <span aria-hidden>🎙️</span>
               {texts.player.stationName}
             </span>
-            <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-rosa">
+            <span className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-[0.2em] text-rosa sm:text-[9px]">
               <motion.span
                 aria-hidden
                 animate={playing ? { opacity: [1, 0.25, 1] } : { opacity: 0.4 }}
@@ -244,11 +253,11 @@ export default function MusicPlayer() {
             </span>
           </div>
 
-          {/* Faixa atual */}
-          <div className="flex items-center gap-3">
+          {/* Linha principal: disco + faixa + controles (tudo numa linha no mobile) */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
             {/* disco com ícone do tipo + equalizador quando tocando */}
             <div
-              className="relative flex size-10 shrink-0 items-center justify-center rounded-full border border-ouro/40 bg-gradient-to-br from-vinho to-ameixa"
+              className="relative flex size-9 shrink-0 items-center justify-center rounded-full border border-ouro/40 bg-gradient-to-br from-vinho to-ameixa sm:size-10"
               aria-hidden
             >
               <span className="text-base">{isRadio ? "🎙️" : "♥"}</span>
@@ -266,6 +275,7 @@ export default function MusicPlayer() {
               )}
             </div>
 
+            {/* faixa atual */}
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5">
                 <span
@@ -280,30 +290,23 @@ export default function MusicPlayer() {
                 </span>
               </p>
               <p className="mt-0.5 truncate text-[10px] uppercase tracking-[0.12em] text-rosado">
-                {track.artist}
+                {needsTap && !playing ? (
+                  <span className="text-blush normal-case tracking-normal">
+                    {texts.player.blockedMessage}
+                  </span>
+                ) : (
+                  track.artist
+                )}
               </p>
             </div>
-          </div>
 
-          {/* a seguir / aviso de bloqueio + controles */}
-          <div className="flex items-center justify-between gap-2">
-            <p className="min-w-0 flex-1 truncate text-[10px] text-rosado/70">
-              {needsTap && !playing ? (
-                <span className="text-blush">{texts.player.blockedMessage}</span>
-              ) : (
-                <>
-                  <span className="text-rosado/50">{texts.player.upNext}: </span>
-                  {nextTrackInfo.title}
-                </>
-              )}
-            </p>
-
-            <div className="flex shrink-0 items-center gap-1.5">
+            {/* controles principais (prev só no sm+) */}
+            <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               <button
                 type="button"
                 onClick={prevTrack}
                 aria-label={texts.player.ariaPrev}
-                className="flex size-8 items-center justify-center rounded-full border border-blush/20 text-creme/90 transition-colors hover:border-rosa active:scale-95"
+                className="hidden size-8 items-center justify-center rounded-full border border-blush/20 text-creme/90 transition-colors hover:border-rosa active:scale-95 sm:flex"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
                   <path d="M10.5 1.6a.8.8 0 0 0-1.24-.67L4.16 4.67a.8.8 0 0 0 0 1.34l5.1 3.74a.8.8 0 0 0 1.24-.67z" />
@@ -314,7 +317,7 @@ export default function MusicPlayer() {
                 type="button"
                 onClick={togglePlay}
                 aria-label={playing ? texts.player.ariaPause : texts.player.ariaPlay}
-                className="flex size-10 items-center justify-center rounded-full bg-rosa-forte text-creme transition-colors hover:bg-rosa active:scale-95"
+                className="flex size-9 items-center justify-center rounded-full bg-rosa-forte text-creme transition-colors hover:bg-rosa active:scale-95 sm:size-10"
               >
                 {playing ? (
                   <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
@@ -338,11 +341,21 @@ export default function MusicPlayer() {
                   <rect x="9" y="1" width="1.8" height="10" rx="0.9" />
                 </svg>
               </button>
+            </div>
+          </div>
+
+          {/* a seguir + volume — só em telas maiores (mantém o mobile enxuto) */}
+          <div className="hidden items-center justify-between gap-2 sm:flex">
+            <p className="min-w-0 flex-1 truncate text-[10px] text-rosado/70">
+              <span className="text-rosado/50">{texts.player.upNext}: </span>
+              {nextTrackInfo.title}
+            </p>
+            <div className="flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
                 onClick={toggleMute}
                 aria-label={muted ? texts.player.ariaUnmute : texts.player.ariaMute}
-                className="hidden size-8 items-center justify-center rounded-full border border-blush/20 text-creme/90 transition-colors hover:border-rosa active:scale-95 min-[420px]:flex"
+                className="flex size-8 items-center justify-center rounded-full border border-blush/20 text-creme/90 transition-colors hover:border-rosa active:scale-95"
               >
                 <span className="text-[11px]" aria-hidden>
                   {muted ? "🔇" : "🔉"}
@@ -356,7 +369,7 @@ export default function MusicPlayer() {
                 value={muted ? 0 : volume}
                 onChange={(e) => changeVolume(Number(e.target.value))}
                 aria-label={texts.player.ariaVolume}
-                className="hidden w-16 accent-rosa-forte sm:block"
+                className="w-16 accent-rosa-forte"
               />
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import GateRevealFx from "./journey/GateRevealFx";
 import { smoothScrollToEl } from "./journey/scroll";
 import GuideBubble from "./GuideBubble";
@@ -261,7 +261,6 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
   const [mended, setMended] = useState(false);
   const [signed, setSigned] = useState(false);
   const [playFx, setPlayFx] = useState(false);
-  const reducedMotion = useReducedMotion();
   const childrenRef = useRef<HTMLDivElement>(null);
   const done = stitched >= TOTAL_STITCHES;
 
@@ -290,9 +289,7 @@ export default function ApartChapter({ children }: { children: React.ReactNode }
     // frase logo abaixo. (O card fica no lugar, então não há pulo de layout.)
     setTimeout(() => {
       const el = childrenRef.current;
-      if (!el) return;
-      if (reducedMotion) el.scrollIntoView({ block: "start" });
-      else smoothScrollToEl(el, 16, 1700);
+      if (el) smoothScrollToEl(el, 16, 1700);
     }, 600);
   }
 

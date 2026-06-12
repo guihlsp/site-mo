@@ -88,14 +88,15 @@ function StaggeredTitle() {
 
 export default function Hero() {
   const hasMusic = radioPlaylist.length > 0;
-  const { isUnlocked, unlock } = useGate();
+  const { isUnlocked, beginStart } = useGate();
   const started = isUnlocked("start");
 
   function startJourney() {
-    // O play precisa nascer dentro do toque dela (política de autoplay)
+    // O play precisa nascer dentro do toque dela (política de autoplay).
     if (hasMusic) requestPlayerStart();
-    // Libera o resto do site; o <Gate stage="start"> rola até a jornada sozinho.
-    unlock("start");
+    // Mostra o loading da rádio e adia o mount pesado da jornada (o provider
+    // cuida disso) — evita a sensação de travar / ter que tocar 2x.
+    beginStart();
   }
 
   return (

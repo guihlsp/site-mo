@@ -494,6 +494,7 @@ export const texts = {
     stationName: "Rádio Guizão FM",
     stationTagline: "a rádio oficial dos apaixonados em estado avançado",
     onAir: "no ar",
+    bootLine: "sintonizando a nossa frequência…",
     nowPlaying: "tocando agora",
     upNext: "a seguir",
     labelRadio: "Vinheta",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import GateRevealFx from "./GateRevealFx";
 import { smoothScrollToEl } from "./scroll";
 import { useGate, type Stage } from "./GateProvider";
@@ -25,7 +25,6 @@ export default function Gate({
   locked?: React.ReactNode;
 }) {
   const { ready, isUnlocked, justUnlocked, clearJustUnlocked } = useGate();
-  const reducedMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const open = isUnlocked(stage);
   const [playFx, setPlayFx] = useState(false);
@@ -36,22 +35,21 @@ export default function Gate({
     // 1) dispara o efeito já no instante do desbloqueio (tela cheia).
     //    Toca mesmo com reduced-motion: é curto, único e não fica repetindo.
     const startId = setTimeout(() => setPlayFx(true), 0);
-    // 2) espera um respiro pra ela VER o efeito, depois rola devagar
+    // 2) espera um respiro pro conteúdo montar e pra ela ver o efeito,
+    //    depois rola devagar (sempre suave — um scroll único e gentil,
+    //    nada de pulo brusco mesmo com reduced-motion)
     const scrollId = setTimeout(() => {
       const el = ref.current;
-      if (el) {
-        if (reducedMotion) el.scrollIntoView({ block: "start" });
-        else smoothScrollToEl(el, 24, 1500);
-      }
+      if (el) smoothScrollToEl(el, 24, 1500);
       clearJustUnlocked();
-    }, 520);
-    const fxId = setTimeout(() => setPlayFx(false), 2200);
+    }, 700);
+    const fxId = setTimeout(() => setPlayFx(false), 2400);
     return () => {
       clearTimeout(startId);
       clearTimeout(scrollId);
       clearTimeout(fxId);
     };
-  }, [justUnlocked, stage, clearJustUnlocked, reducedMotion]);
+  }, [justUnlocked, stage, clearJustUnlocked]);
 
   if (!ready || !open) {
     return locked ? <div ref={ref}>{locked}</div> : <div ref={ref} aria-hidden />;

@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import RadioBootOverlay from "./RadioBootOverlay";
 
 /**
  * Sistema de portões da jornada.
@@ -39,6 +40,8 @@ type GateContextValue = {
   /** estágio aberto agora mesmo por uma ação da usuária (p/ auto-scroll) */
   justUnlocked: Stage | null;
   clearJustUnlocked: () => void;
+  /** inicia a experiência: mostra o loading da rádio e libera o "start" */
+  beginStart: () => void;
 };
 
 const GateContext = createContext<GateContextValue | null>(null);
@@ -57,6 +60,7 @@ export default function GateProvider({ children }: { children: React.ReactNode }
   const [unlocked, setUnlocked] = useState<Record<Stage, boolean>>(emptyState);
   const [ready, setReady] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState<Stage | null>(null);
+  const [booting, setBooting] = useState(false);
 
   // Lê o progresso salvo (adiado um tick, como no ApartChapter)
   useEffect(() => {
@@ -97,6 +101,15 @@ export default function GateProvider({ children }: { children: React.ReactNode }
 
   const isUnlocked = useCallback((stage: Stage) => unlocked[stage], [unlocked]);
 
+  // Mostra o loading da rádio e adia o mount pesado da jornada, pra ela
+  // pintar primeiro (sem sensação de travamento no clique de começar).
+  const beginStart = useCallback(() => {
+    if (unlocked.start) return;
+    setBooting(true);
+    setTimeout(() => unlock("start"), 90); // deixa o overlay pintar antes
+    setTimeout(() => setBooting(false), 1500); // some depois do mount
+  }, [unlocked.start, unlock]);
+
   // Trava o scroll do site enquanto a experiência não começou.
   // Só age depois de "ready" para não travar quem volta no meio da sessão.
   const restore = useRef<{ body: string; html: string } | null>(null);
@@ -123,9 +136,14 @@ export default function GateProvider({ children }: { children: React.ReactNode }
   }, [ready, unlocked.start]);
 
   const value = useMemo<GateContextValue>(
-    () => ({ ready, isUnlocked, unlock, justUnlocked, clearJustUnlocked }),
-    [ready, isUnlocked, unlock, justUnlocked, clearJustUnlocked],
+    () => ({ ready, isUnlocked, unlock, justUnlocked, clearJustUnlocked, beginStart }),
+    [ready, isUnlocked, unlock, justUnlocked, clearJustUnlocked, beginStart],
   );
 
-  return <GateContext.Provider value={value}>{children}</GateContext.Provider>;
+  return (
+    <GateContext.Provider value={value}>
+      {children}
+      <RadioBootOverlay show={booting} />
+    </GateContext.Provider>
+  );
 }
