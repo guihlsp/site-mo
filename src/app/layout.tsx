@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
+import FloatingStickerBackground from "@/components/FloatingStickerBackground";
 import { texts } from "@/lib/texts";
 
 const fraunces = Fraunces({
@@ -56,6 +57,8 @@ export default function RootLayout({
         <div className="atmosphere" aria-hidden />
         <div className="vignette" aria-hidden />
         <div className="grain" aria-hidden />
+        {/* Caricaturas do casal flutuando atrás do conteúdo (z 0) */}
+        <FloatingStickerBackground />
         {children}
       </body>
     </html>

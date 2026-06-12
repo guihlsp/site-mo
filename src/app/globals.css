@@ -307,3 +307,45 @@ body {
     animation: none !important;
   }
 }
+
+/* ——— Caricaturas flutuando no fundo (FloatingStickerBackground) ——— */
+@keyframes sticker-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--rot-from, 0deg)) scale(1);
+  }
+  50% {
+    transform: translate3d(var(--dx, 40px), var(--dy, 40px), 0)
+      rotate(var(--rot-to, 0deg)) scale(var(--scale-to, 1.05));
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--rot-from, 0deg)) scale(1);
+  }
+}
+
+.floating-sticker {
+  position: absolute;
+  /* deriva lenta de ida-e-volta: nunca "pula" ao reiniciar */
+  animation: sticker-drift var(--dur, 70s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: calc(var(--sticker-opacity, 0.16) * var(--op, 1));
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* No mobile: menos stickers, menores e mais discretos */
+@media (max-width: 767px) {
+  .floating-sticker {
+    width: calc(var(--w, 110px) * 0.72);
+    opacity: calc(var(--sticker-opacity-mobile, 0.1) * var(--op, 1));
+  }
+  .floating-sticker[data-mobile="0"] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-sticker {
+    animation: none !important;
+  }
+}
